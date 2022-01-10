@@ -12,6 +12,11 @@ namespace BassClefStudio.DocLang
     public interface IDocNode
     {
         /// <summary>
+        /// Gets a <see cref="string"/> indicating the type of <see cref="IDocNode"/> this object represents. This value is used when parsing the DocLang object tree.
+        /// </summary>
+        string NodeType { get; }
+
+        /// <summary>
         /// Gets the parent <see cref="IDocNode"/> object, or <c>null</c> if this is the root <see cref="IDocNode"/>.
         /// </summary>
         IDocNode? Parent { get; set; }
@@ -64,13 +69,18 @@ namespace BassClefStudio.DocLang
     }
 
     /// <summary>
-    /// Indicates that a given <see cref="IDocNode"/> provides some kind of metadata to its enclosing <see cref="IDocNode"/>.
+    /// Indicates that a given <see cref="IDocNode"/> provides <typeparamref name="T"/> metadata for its enclosing <see cref="IDocNode"/>.
     /// </summary>
-    public interface IDocMetadataNode : IDocNode
+    public interface IDocMetadataNode<T> : IDocNode
     {
         /// <summary>
         /// The unique <see cref="string"/> key within the enclosing <see cref="IDocNode"/> for this metadata.
         /// </summary>
         string Key { get; }
+
+        /// <summary>
+        /// The <typeparamref name="T"/> data stored in this metadata node.
+        /// </summary>
+        T Value { get; }
     }
 }

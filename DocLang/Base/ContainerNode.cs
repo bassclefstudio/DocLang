@@ -13,6 +13,9 @@ namespace BassClefStudio.DocLang.Base
     public abstract class ContainerNode : IDocContainerNode
     {
         /// <inheritdoc/>
+        public abstract string NodeType { get; }
+
+        /// <inheritdoc/>
         public IDocNode? Parent { get; set; }
 
         private IDocNode child;

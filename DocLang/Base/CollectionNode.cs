@@ -12,6 +12,9 @@ namespace BassClefStudio.DocLang.Base
     /// </summary>
     public abstract class CollectionNode : IDocCollectionNode
     {
+        /// <inheritdoc/>
+        public abstract string NodeType { get; }
+
         protected List<IDocNode> ChildList { get; }
         /// <inheritdoc/>
         public IEnumerable<IDocNode> Children => ChildList.AsReadOnly();

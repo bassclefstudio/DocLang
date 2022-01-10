@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 namespace BassClefStudio.DocLang.Base
 {
     /// <summary>
-    /// A basic implementation of <see cref="IDocTextNode"/>.
+    /// A basic implementation of <see cref="IDocTextNode"/> for plain text.
     /// </summary>
     public abstract class TextNode : IDocTextNode
     {
+        /// <inheritdoc/>
+        public abstract string NodeType { get; }
+
         /// <inheritdoc/>
         public string Text { get; set; }
 
@@ -24,6 +27,7 @@ namespace BassClefStudio.DocLang.Base
         /// <param name="text">The <see cref="string"/> text that is contained in this <see cref="IDocTextNode"/>.</param>
         public TextNode(IDocNode? parent, string text)
         {
+            Parent = parent;
             Text = text;
         }
     }
