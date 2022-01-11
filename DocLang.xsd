@@ -1,0 +1,131 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="Document" type="Document"></xs:element>
+    <xs:complexType name="Content" mixed="true">
+        <xs:annotation>
+            <xs:documentation>Represents a collection of Node objects, interspersed optionally with text content, that can be written into a DocLang document body.</xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Paragraph" type="Paragraph">
+                <xs:annotation>
+                    <xs:documentation>Contains a paragraph containing some other document content.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Heading" type="Heading">
+                <xs:annotation>
+                    <xs:documentation>Defines a heading containing some other document content.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="Document">
+        <xs:annotation>
+            <xs:documentation>A representation of a full document written in DocLang.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Title" type="Content">
+                <xs:annotation>
+                    <xs:documentation>The title of the document, as displayed in the document itself.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Author" type="Author" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>A person involved in the creation or publication of a document.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Content" type="Content">
+                <xs:annotation>
+                    <xs:documentation>The contents of this document.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="Id" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>A unique ID in the document tree that identifies this document.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="Name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>The name of the document which is shown externally.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Heading">
+        <xs:annotation>
+            <xs:documentation>A logical, named grouping of content within a document.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Title" type="Content">
+                <xs:annotation>
+                    <xs:documentation>The title of the heading, as displayed in the document itself.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Content" type="Content">
+                <xs:annotation>
+                    <xs:documentation>The contents of this heading.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="Id" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>A unique ID in the document tree that identifies this heading.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="Name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>The name of the heading which is shown externally.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Author">
+        <xs:annotation>
+            <xs:documentation>A representation of a person who contributed to part of a DocLang document.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:annotation>
+                    <xs:documentation>The author's name.</xs:documentation>
+                </xs:annotation>
+                <xs:attribute type="AuthorType" name="Type" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The status/position of this author relative to the document.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:simpleType name="AuthorType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Creator">
+                <xs:annotation>
+                    <xs:documentation>This author created this DocLang document, and/or was the primary contributor.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Contributor">
+                <xs:annotation>
+                    <xs:documentation>This author aided in the creation/writing of this DocLang document.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Editor">
+                <xs:annotation>
+                    <xs:documentation>This author helped proofread, edit, or otherwise revise the final document.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="Publisher">
+                <xs:annotation>
+                    <xs:documentation>This author is responsible for publishing the completed document.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Paragraph">
+        <xs:annotation>
+            <xs:documentation>Represents an offset paragraph containing some content.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:annotation>
+                <xs:documentation>The content within this paragraph.</xs:documentation>
+            </xs:annotation>
+            <xs:extension base="Content"></xs:extension>
+        </xs:complexContent>      
+    </xs:complexType>
+</xs:schema>
