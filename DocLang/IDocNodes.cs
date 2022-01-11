@@ -23,38 +23,27 @@ namespace BassClefStudio.DocLang
     }
 
     /// <summary>
-    /// Indicates that a given <see cref="IDocNode"/> is a container for another <see cref="IDocNode"/>, over which it provides additional formatting, syntax, or style information.
+    /// Indicates that a given <see cref="IDocNode"/> is a container for a collection of <see cref="IDocNode"/> content items, over which it provides additional formatting, syntax, or style information.
     /// </summary>
-    public interface IDocContainerNode : IDocNode
+    public interface IDocContentNode : IDocNode
     {
         /// <summary>
-        /// The child <see cref="IDocNode"/> node which this <see cref="IDocContainerNode"/> manages.
+        /// Gets the collection of child <see cref="IDocNode"/> nodes which this <see cref="IDocContentNode"/> manages as content.
         /// </summary>
-        IDocNode Child { get; set; }
-    }
-
-    /// <summary>
-    /// Indicates that a given <see cref="IDocNode"/> is a container for a collection of child <see cref="IDocNode"/>s, over which it provides additional formatting, syntax, or style information.
-    /// </summary>
-    public interface IDocCollectionNode : IDocNode
-    {
-        /// <summary>
-        /// Gets the collection of child <see cref="IDocNode"/> nodes which this <see cref="IDocCollectionNode"/> manages.
-        /// </summary>
-        IEnumerable<IDocNode> Children { get; }
+        IEnumerable<IDocNode> Content { get; }
 
         /// <summary>
-        /// Adds a new <see cref="IDocNode"/> node to <see cref="Children"/>.
+        /// Adds a new <see cref="IDocNode"/> node to <see cref="Content"/>.
         /// </summary>
         /// <param name="child">The <see cref="IDocNode"/> to add.</param>
-        void AddChild(IDocNode child);
+        void AddContent(IDocNode child);
 
         /// <summary>
-        /// Attempts to remove the first instance of a child node from this <see cref="IDocCollectionNode"/>.
+        /// Attempts to remove the first instance of an <see cref="IDocNode"/> from <see cref="Content"/>.
         /// </summary>
-        /// <param name="child">The <see cref="IDocNode"/> in <see cref="Children"/> to remove from the collection.</param>
+        /// <param name="child">The <see cref="IDocNode"/> to remove.</param>
         /// <returns><c>true</c> if the node is successfully removed; otherwise, <c>false</c>.</returns>
-        bool RemoveChild(IDocNode child);
+        bool RemoveContent(IDocNode child);
     }
 
     /// <summary>
@@ -66,21 +55,5 @@ namespace BassClefStudio.DocLang
         /// The <see cref="string"/> text that is contained in this <see cref="IDocTextNode"/>.
         /// </summary>
         string Text { get; set; }
-    }
-
-    /// <summary>
-    /// Indicates that a given <see cref="IDocNode"/> provides <typeparamref name="T"/> metadata for its enclosing <see cref="IDocNode"/>.
-    /// </summary>
-    public interface IDocMetadataNode<T> : IDocNode
-    {
-        /// <summary>
-        /// The unique <see cref="string"/> key within the enclosing <see cref="IDocNode"/> for this metadata.
-        /// </summary>
-        string Key { get; }
-
-        /// <summary>
-        /// The <typeparamref name="T"/> data stored in this metadata node.
-        /// </summary>
-        T Value { get; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,27 +11,37 @@ namespace BassClefStudio.DocLang.Parsing
     /// <summary>
     /// Represents a service that can parse <see cref="IDocNode"/>s to and from their XML representations.
     /// </summary>
-    public interface IDocParser
+    public interface IDocParser : IParser<IDocNode>
     {
         /// <summary>
-        /// Checks whether the <see cref="IDocParser"/> can parse <see cref="IDocNode"/>s of the given type..
+        /// Gets a collection of <see cref="string"/> XML node names or <see cref="IDocNode.NodeType"/>s that this <see cref="IDocParser"/> supports.
         /// </summary>
-        /// <param name="nodeType">The desired <see cref="IDocNode.NodeType"/> of nodes to parse. When reading from XML, this is equivalent to the <see cref="XElement.Name"/>.</param>
-        /// <returns>A <see cref="bool"/> indicating whether this <see cref="IDocParser"/> can handle parsing nodes of type <paramref name="nodeType"/>.</returns>
-        bool CanParse(string nodeType);
+        IEnumerable<string> SupportedNodes { get; }
+    }
+
+    public abstract class DocParser : IDocParser
+    {
+        /// <inheritdoc/>
+        public IEnumerable<string> SupportedNodes { get; }
 
         /// <summary>
-        /// Reads and parses the supported (see <see cref="CanParse(string)"/>) XML as an <see cref="IDocNode"/>.
+        /// An <see cref="IDocParserCollection"/> containing <see cref="IDocParser"/>s for any child items.
         /// </summary>
-        /// <param name="element">The <see cref="XElement"/> XML to parse.</param>
-        /// <returns>The <see cref="IDocNode"/> represented by <paramref name="element"/>.</returns>
-        IDocNode Read(XElement element);
+        public IDocParserCollection? ChildParsers { get; set; }
 
         /// <summary>
-        /// Writes the contents of the supported (see <see cref="CanParse(string)"/>) <see cref="IDocNode"/> as XML.
+        /// Creates a new <see cref="DocParser"/>.
         /// </summary>
-        /// <param name="node">The <see cref="IDocNode"/> to serialize as XML.</param>
-        /// <returns>An <see cref="XElement"/> describing the XML corresponding to <paramref name="node"/>.</returns>
-        XElement Write(IDocNode node);
+        /// <param name="supported">The <see cref="string"/> XML node names or <see cref="IDocNode.NodeType"/>s that this <see cref="DocParser"/> supports.</param>
+        public DocParser(params string[] supported)
+        {
+            SupportedNodes = supported;
+        }
+
+        /// <inheritdoc/>
+        public abstract IDocNode Read(XElement element);
+
+        /// <inheritdoc/>
+        public abstract XNode Write(IDocNode node);
     }
 }
