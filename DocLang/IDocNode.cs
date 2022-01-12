@@ -20,7 +20,7 @@ namespace BassClefStudio.DocLang
         /// <summary>
         /// A <see cref="string"/> ID, which can be used to reference this <see cref="IDocRefNode"/> from within or between DocLang documents.
         /// </summary>
-        string Id { get; }
+        string Id { get; set; }
     }
 
     /// <summary>
@@ -47,18 +47,22 @@ namespace BassClefStudio.DocLang
         /// <summary>
         /// The <see cref="IDocNode"/>s of content that will be contained within this <see cref="IDocContentNode"/>.
         /// </summary>
-        IEnumerable<IDocNode> Content { get; }
+        IList<IDocNode> Content { get; }
+    }
+
+    /// <summary>
+    /// An <see cref="IDocHeaderNode"/>
+    /// </summary>
+    public interface IDocHeaderNode : IDocRefNode
+    {
+        /// <summary>
+        /// The <see cref="string"/> name of the header.
+        /// </summary>
+        string Name { get; set; }
 
         /// <summary>
-        /// Adds a new <see cref="IDocNode"/> node to the <see cref="Content"/> collection.
+        /// The <see cref="IDocNode"/>s of content of the title element for this header.
         /// </summary>
-        /// <param name="child">The <see cref="IDocNode"/> to add.</param>
-        void AddChild(IDocNode child);
-
-        /// <summary>
-        /// Removes the first instance of the <see cref="IDocNode"/> node from the <see cref="Content"/> collection.
-        /// </summary>
-        /// <param name="child">The <see cref="IDocNode"/> to remove.</param>
-        bool RemoveChild(IDocNode child);
+        IList<IDocNode> Title { get; set; }
     }
 }

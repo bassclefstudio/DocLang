@@ -11,7 +11,7 @@ namespace BassClefStudio.DocLang.Parsing.Base
     /// <summary>
     /// An <see cref="DocParseService{TNode, TData}"/> for <see cref="IDocContentNode"/>s that parses child elements.
     /// </summary>
-    public class ContentParser : DocParseService<IDocContentNode, XElement>
+    public class HeaderParser : DocParseService<IDocHeaderNode, XElement>
     {
         /// <summary>
         /// An <see cref="IDocParser"/> used for parsing child elements.
@@ -19,37 +19,31 @@ namespace BassClefStudio.DocLang.Parsing.Base
         public IDocParser? ChildParser { get; set; }
 
         /// <summary>
-        /// Creates a new <see cref="ContentParser"/>.
+        /// Creates a new <see cref="HeaderParser"/>.
         /// </summary>
-        public ContentParser()
+        public HeaderParser()
         { }
 
         /// <inheritdoc/>
-        protected override bool ReadInternal(IDocContentNode node, XElement element)
+        protected override bool ReadInternal(IDocHeaderNode node, XElement element)
         {
             Guard.IsNotNull(ChildParser, nameof(ChildParser));
-            XContainer contentElement = node.DirectContent ? element : element.EnforceElement("Content");
-            IEnumerable<IDocNode> content = contentElement.Nodes().Select(ChildParser.Read);
-            foreach (var child in content)
+            node.Name = element.EnforceAttribute("Name").Value;
+            IEnumerable<IDocNode> title = element.EnforceElement("Title").Nodes().Select(ChildParser.Read);
+            foreach (var child in title)
             {
-                node.Content.Add(child);
+                node.Title.Add(child);
             }
             return true;
         }
 
         /// <inheritdoc/>
-        protected override bool WriteInternal(IDocContentNode node, XElement element)
+        protected override bool WriteInternal(IDocHeaderNode node, XElement element)
         {
             Guard.IsNotNull(ChildParser, nameof(ChildParser));
-            XNode[] content = node.Content.Select(ChildParser.Write).ToArray();
-            if (node.DirectContent)
-            {
-                element.Add(content);
-            }
-            else
-            {
-                element.SetElementValue("Content", content);
-            }
+            XNode[] content = node.Title.Select(ChildParser.Write).ToArray();
+            element.SetElementValue("Title", content);
+            element.SetAttributeValue("Name", node.Name);
             return true;
         }
     }
