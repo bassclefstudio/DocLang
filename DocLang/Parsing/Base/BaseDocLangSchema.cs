@@ -14,6 +14,16 @@ namespace BassClefStudio.DocLang.Parsing.Base
     /// </summary>
     public class BaseDocLangSchema : IDocLangSchema
     {
+        public static readonly BaseDocLangSchema Version1 = new BaseDocLangSchema();
+
+        /// <summary>
+        /// Creates a new <see cref="BaseDocLangSchema"/> for the given configuration and schema version.
+        /// </summary>
+        protected BaseDocLangSchema()
+        {
+            //// TODO: Add version-specific flags for enabling different features.
+        }
+
         /// <inheritdoc/>
         public virtual void ConfigureSchema(ContainerBuilder builder)
         {
@@ -21,7 +31,7 @@ namespace BassClefStudio.DocLang.Parsing.Base
             builder.ConfigureNode<TextNode, XText>(string.Empty, elementDelegate: c => new XText(string.Empty));
 
             //// Headers setup:
-            builder.ConfigureElementNode<HeaderNode>("Header");
+            builder.ConfigureElementNode<HeadingNode>("Heading");
             builder.ConfigureElementNode<Document>("Document");
 
             //// Content blocks:

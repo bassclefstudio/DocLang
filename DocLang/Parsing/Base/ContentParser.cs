@@ -42,7 +42,7 @@ namespace BassClefStudio.DocLang.Parsing.Base
             }
             else
             {
-                element.SetElementValue("Content", content);
+                element.Add(new XElement("Content", content));
             }
             return true;
         }

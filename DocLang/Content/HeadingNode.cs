@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace BassClefStudio.DocLang.Content
 {
     /// <summary>
-    /// An <see cref="IDocHeaderNode"/> and <see cref="IDocContentNode"/> header with attached <see cref="IDocNode"/> contents.
+    /// An <see cref="IDocHeadingNode"/> and <see cref="IDocContentNode"/> header with attached <see cref="IDocNode"/> contents.
     /// </summary>
-    public class HeaderNode : IDocHeaderNode, IDocContentNode
+    public class HeadingNode : IDocHeadingNode, IDocContentNode
     {
         /// <inheritdoc/>
         public bool DirectContent { get; } = false;
@@ -32,11 +32,24 @@ namespace BassClefStudio.DocLang.Content
         public IList<IDocNode> Content { get; }
 
         /// <summary>
-        /// Creates a new <see cref="HeaderNode"/>.
+        /// Creates a new <see cref="HeadingNode"/>.
         /// </summary>
-        public HeaderNode()
+        public HeadingNode()
         {
             Name = string.Empty;
+            Title = new List<IDocNode>();
+            Content = new List<IDocNode>();
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="HeadingNode"/> with the given name and ID.
+        /// </summary>
+        /// <param name="id">A <see cref="string"/> ID, which can be used to reference this <see cref="IDocRefNode"/> from within or between DocLang documents.</param>
+        /// <param name="name">The <see cref="string"/> name of the header.</param>
+        public HeadingNode(string id, string name)
+        {
+            Id = id;
+            Name = name;
             Title = new List<IDocNode>();
             Content = new List<IDocNode>();
         }

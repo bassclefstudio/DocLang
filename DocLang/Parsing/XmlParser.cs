@@ -21,10 +21,12 @@ namespace BassClefStudio.DocLang.Parsing
         /// <summary>
         /// Creates a new <see cref="XmlParser"/> with a configured DI <see cref="IContainer"/>.
         /// </summary>
-        public XmlParser()
+        /// <param name="schema">The <see cref="IDocLangSchema"/> describing the schema which should be used by this parser for converting DocLang into XML.</param>
+        public XmlParser(IDocLangSchema schema)
         {
             ContainerBuilder builder = new ContainerBuilder();
             ConfigureServices(builder);
+            schema.ConfigureSchema(builder);
             Container = builder.Build();
         }
 
@@ -40,8 +42,8 @@ namespace BassClefStudio.DocLang.Parsing
             builder.RegisterAssemblyTypes(typeof(XmlParser).Assembly)
                 .AssignableTo<IDocParseService>()
                 .SingleInstance()
+                .AsImplementedInterfaces()
                 .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
-            
         }
 
         /// <inheritdoc/>

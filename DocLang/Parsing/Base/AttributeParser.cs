@@ -16,7 +16,7 @@ namespace BassClefStudio.DocLang.Parsing.Base
         /// <inheritdoc/>
         protected override bool ReadInternal(IDocAttributedNode node, XElement element)
         {
-            foreach (var author in element.EnforceElements("Author").Select(ReadAuthor))
+            foreach (var author in element.EnforceElement("Authors").EnforceElements("Author").Select(ReadAuthor))
             {
                 node.Authors.Add(author);
             }
@@ -32,7 +32,9 @@ namespace BassClefStudio.DocLang.Parsing.Base
         /// <inheritdoc/>
         protected override bool WriteInternal(IDocAttributedNode node, XElement element)
         {
-            element.Add(node.Authors.Select(WriteAuthor).ToArray());
+            element.Add(new XElement(
+                "Authors",
+                node.Authors.Select(WriteAuthor).ToArray()));
             return true;
         }
 

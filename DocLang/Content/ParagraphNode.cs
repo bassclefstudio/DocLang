@@ -24,5 +24,14 @@ namespace BassClefStudio.DocLang.Content
         {
             Content = new List<IDocNode>();
         }
+
+        /// <summary>
+        /// Creates a new <see cref="ParagraphNode"/>.
+        /// </summary>
+        /// <param name="content">A collection of child <see cref="IDocNode"/> content elements.</param>
+        public ParagraphNode(params IDocNode[] content)
+        {
+            Content = new List<IDocNode>(content);
+        }
     }
 }

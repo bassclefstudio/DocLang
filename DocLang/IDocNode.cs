@@ -54,7 +54,7 @@ namespace BassClefStudio.DocLang
     /// <summary>
     /// An <see cref="IDocRefNode"/> which contains a name and <see cref="IDocNode"/> content title.
     /// </summary>
-    public interface IDocHeaderNode : IDocRefNode
+    public interface IDocHeadingNode : IDocRefNode
     {
         /// <summary>
         /// The <see cref="string"/> name of the header.

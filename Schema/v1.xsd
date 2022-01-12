@@ -21,13 +21,13 @@
         <xs:annotation>
             <xs:documentation>A representation of a full document written in DocLang.</xs:documentation>
         </xs:annotation>
-        <xs:sequence>
+        <xs:all>
             <xs:element name="Title" type="Content">
                 <xs:annotation>
                     <xs:documentation>The title of the document, as displayed in the document itself.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="Author" type="Author" minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Authors" type="Authors">
                 <xs:annotation>
                     <xs:documentation>A person involved in the creation or publication of a document.</xs:documentation>
                 </xs:annotation>
@@ -37,7 +37,7 @@
                     <xs:documentation>The contents of this document.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-        </xs:sequence>
+        </xs:all>
         <xs:attribute name="Id" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>A unique ID in the document tree that identifies this document.</xs:documentation>
@@ -53,7 +53,7 @@
         <xs:annotation>
             <xs:documentation>A logical, named grouping of content within a document.</xs:documentation>
         </xs:annotation>
-        <xs:sequence>
+        <xs:all>
             <xs:element name="Title" type="Content">
                 <xs:annotation>
                     <xs:documentation>The title of the heading, as displayed in the document itself.</xs:documentation>
@@ -64,7 +64,7 @@
                     <xs:documentation>The contents of this heading.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-        </xs:sequence>
+        </xs:all>
         <xs:attribute name="Id" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>A unique ID in the document tree that identifies this heading.</xs:documentation>
@@ -75,6 +75,18 @@
                 <xs:documentation>The name of the heading which is shown externally.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="Authors">
+        <xs:annotation>
+            <xs:documentation>A collection of Author objects associated with a given node.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Author" type="Author" minOccurs="1" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>One of the authors associated with the work.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
     </xs:complexType>
     <xs:complexType name="Author">
         <xs:annotation>

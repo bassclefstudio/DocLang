@@ -9,9 +9,9 @@ using System.Xml.Linq;
 namespace BassClefStudio.DocLang.Parsing.Base
 {
     /// <summary>
-    /// An <see cref="DocParseService{TNode, TData}"/> for <see cref="IDocHeaderNode"/>s that parses title and name elements.
+    /// An <see cref="DocParseService{TNode, TData}"/> for <see cref="IDocHeadingNode"/>s that parses title and name elements.
     /// </summary>
-    public class HeaderParser : DocParseService<IDocHeaderNode, XElement>
+    public class HeadingParser : DocParseService<IDocHeadingNode, XElement>
     {
         /// <summary>
         /// An <see cref="IDocParser"/> used for parsing child elements.
@@ -19,7 +19,7 @@ namespace BassClefStudio.DocLang.Parsing.Base
         public IDocParser? ChildParser { get; set; }
 
         /// <inheritdoc/>
-        protected override bool ReadInternal(IDocHeaderNode node, XElement element)
+        protected override bool ReadInternal(IDocHeadingNode node, XElement element)
         {
             Guard.IsNotNull(ChildParser, nameof(ChildParser));
             node.Name = element.EnforceAttribute("Name").Value;
@@ -32,11 +32,11 @@ namespace BassClefStudio.DocLang.Parsing.Base
         }
 
         /// <inheritdoc/>
-        protected override bool WriteInternal(IDocHeaderNode node, XElement element)
+        protected override bool WriteInternal(IDocHeadingNode node, XElement element)
         {
             Guard.IsNotNull(ChildParser, nameof(ChildParser));
             XNode[] content = node.Title.Select(ChildParser.Write).ToArray();
-            element.SetElementValue("Title", content);
+            element.Add(new XElement("Title", content));
             element.SetAttributeValue("Name", node.Name);
             return true;
         }
