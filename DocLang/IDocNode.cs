@@ -10,12 +10,7 @@ namespace BassClefStudio.DocLang
     /// Any node or object that can be added to the DocLang document tree.
     /// </summary>
     public interface IDocNode
-    {
-        /// <summary>
-        /// The XML element name describing this <see cref="IDocNode"/>, which identifies its purpose in the document.
-        /// </summary>
-        string NodeType { get; }
-    }
+    { }
 
     /// <summary>
     /// An <see cref="IDocNode"/> which is accessible by its unique ID.
@@ -44,6 +39,11 @@ namespace BassClefStudio.DocLang
     /// </summary>
     public interface IDocContentNode : IDocNode
     {
+        /// <summary>
+        /// Gets a <see cref="bool"/> indicating whether the <see cref="Content"/> of this node is direct content. If <c>false</c>, content is parsed into its own "content" XML element.
+        /// </summary>
+        bool DirectContent { get; }
+
         /// <summary>
         /// The <see cref="IDocNode"/>s of content that will be contained within this <see cref="IDocContentNode"/>.
         /// </summary>
