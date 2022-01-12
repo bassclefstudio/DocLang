@@ -28,6 +28,10 @@ namespace BassClefStudio.DocLang.Parsing
             Container = builder.Build();
         }
 
+        /// <summary>
+        /// Registers and configures various DI servies required for this <see cref="XmlParser"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="ContainerBuilder"/> responsible for building the DI container.</param>
         public virtual void ConfigureServices(ContainerBuilder builder)
         {
             builder.RegisterType<DocParser>()
@@ -37,6 +41,7 @@ namespace BassClefStudio.DocLang.Parsing
                 .AssignableTo<IDocParseService>()
                 .SingleInstance()
                 .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
+            
         }
 
         /// <inheritdoc/>

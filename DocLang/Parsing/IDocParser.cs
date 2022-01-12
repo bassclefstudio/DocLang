@@ -1,4 +1,5 @@
-﻿using BassClefStudio.DocLang.Content;
+﻿using Autofac.Features.Indexed;
+using BassClefStudio.DocLang.Content;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -40,19 +41,26 @@ namespace BassClefStudio.DocLang.Parsing
         public IEnumerable<IDocParseService> Services { get; }
 
         /// <summary>
-        /// The <see cref="IDocParseConfig"/> for configuring and constructing new <see cref="IDocNode"/>s.
+        /// The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="IDocNode"/>s.
         /// </summary>
-        public IDocParseConfig Config { get; }
+        public IIndex<string, IDocNode> NodeConfig { get; }
+
+        /// <summary>
+        /// The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="XNode"/>s.
+        /// </summary>
+        public IIndex<Type, XNode> ElementConfig { get; }
 
         /// <summary>
         /// Creates a new <see cref="DocParser"/>.
         /// </summary>
         /// <param name="services">A collection of <see cref="IDocParseService"/>s for parsing nodes.</param>
-        /// <param name="config">The <see cref="IDocParseConfig"/> for configuring and constructing new <see cref="IDocNode"/>s.</param>
-        public DocParser(IEnumerable<IDocParseService> services, IDocParseConfig config)
+        /// <param name="nodeConfig">The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="IDocNode"/>s.</param>
+        /// <param name="elementConfig">The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="XNode"/>s.</param>
+        public DocParser(IEnumerable<IDocParseService> services, IIndex<string, IDocNode> nodeConfig, IIndex<Type, XNode> elementConfig)
         {
             Services = services;
-            Config = config;
+            NodeConfig = nodeConfig;
+            ElementConfig = elementConfig;
         }
 
         /// <inheritdoc/>
@@ -61,13 +69,13 @@ namespace BassClefStudio.DocLang.Parsing
             Guard.IsNotNull(Services, nameof(Services));
             //// Improve IDocNode constructor code?
             IDocNode? node;
-            if (data is XElement element)
+            if (data is XText text)
             {
-                node = Config.CreateNode(element.Name.LocalName);
+                node = NodeConfig[string.Empty];
             }
-            else if (data is XText text)
+            else if (data is XElement element)
             {
-                node = new TextNode(text.Value);
+                node = NodeConfig[element.Name.LocalName];
             }
             else
             {
@@ -86,7 +94,7 @@ namespace BassClefStudio.DocLang.Parsing
         {
             Guard.IsNotNull(Services, nameof(Services));
             //// Improve XNode constructor code?
-            XNode element = node is IDocTextNode textNode ? new XText(textNode.Content) : new XElement(string.Empty);
+            XNode element = ElementConfig[node.GetType()];
             foreach (var service in Services)
             {
                 service.Write(node, element);
