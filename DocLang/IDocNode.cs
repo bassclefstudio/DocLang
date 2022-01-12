@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BassClefStudio.DocLang.Metadata;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -51,7 +52,7 @@ namespace BassClefStudio.DocLang
     }
 
     /// <summary>
-    /// An <see cref="IDocHeaderNode"/>
+    /// An <see cref="IDocRefNode"/> which contains a name and <see cref="IDocNode"/> content title.
     /// </summary>
     public interface IDocHeaderNode : IDocRefNode
     {
@@ -63,6 +64,17 @@ namespace BassClefStudio.DocLang
         /// <summary>
         /// The <see cref="IDocNode"/>s of content of the title element for this header.
         /// </summary>
-        IList<IDocNode> Title { get; set; }
+        IList<IDocNode> Title { get; }
+    }
+
+    /// <summary>
+    /// An <see cref="IDocRefNode"/> which is attributed to a set of <see cref="Author"/> values.
+    /// </summary>
+    public interface IDocAttributedNode : IDocRefNode
+    {
+        /// <summary>
+        /// The collection of <see cref="Author"/>s responsible for the creation of the given <see cref="IDocAttributedNode"/> and any child content it has.
+        /// </summary>
+        IList<Author> Authors { get; }
     }
 }

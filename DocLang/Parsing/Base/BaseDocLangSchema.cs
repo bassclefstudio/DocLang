@@ -17,8 +17,15 @@ namespace BassClefStudio.DocLang.Parsing.Base
         /// <inheritdoc/>
         public virtual void ConfigureSchema(ContainerBuilder builder)
         {
-            //// Setup the default node (mixed-conent text) as TextNode.
-            builder.ConfigureNode<TextNode, XText>(string.Empty);
+            //// Setup the default node (mixed-conent text) as TextNode:
+            builder.ConfigureNode<TextNode, XText>(string.Empty, elementDelegate: c => new XText(string.Empty));
+
+            //// Headers setup:
+            builder.ConfigureElementNode<HeaderNode>("Header");
+            builder.ConfigureElementNode<Document>("Document");
+
+            //// Content blocks:
+            builder.ConfigureElementNode<ParagraphNode>("Paragraph");
         }
     }
 
@@ -86,5 +93,23 @@ namespace BassClefStudio.DocLang.Parsing.Base
                 builder.Register(elementDelegate).Keyed<XNode>(nodeType);
             }
         }
+
+        /// <summary>
+        /// Attaches the given <typeparamref name="TNode"/> node and an <see cref="XElement"/> to a <see cref="string"/> DocLang element name.
+        /// </summary>
+        /// <typeparam name="TNode">The type of <see cref="IDocNode"/> being attached.</typeparam>
+        /// <param name="builder">The <see cref="ContainerBuilder"/> responsible for building the DI container.</param>
+        /// <param name="name">The <see cref="string"/> DocLang name which associates and connects the <see cref="IDocNode"/> with its XML representation. Also sets the <see cref="XElement"/>'s name.</param>
+        /// <param name="nodeDelegate">Optionally, a <see cref="Func{T, TResult}"/> which resolves a new <typeparamref name="TNode"/> node.</param>
+        public static void ConfigureElementNode<TNode>(this ContainerBuilder builder, string name, Func<IComponentContext, TNode>? nodeDelegate = null) where TNode : IDocNode => ConfigureNode<TNode, XElement>(builder, name, nodeDelegate, c => new XElement(name));
+
+        /// <summary>
+        /// Attaches the given <see cref="IDocNode"/> node and an <see cref="XElement"/> to a <see cref="string"/> DocLang element name.
+        /// </summary>
+        /// <param name="builder">The <see cref="ContainerBuilder"/> responsible for building the DI container.</param>
+        /// <param name="name">The <see cref="string"/> DocLang name which associates and connects the <see cref="IDocNode"/> with its XML representation. Also sets the <see cref="XElement"/>'s name.</param>
+        /// <param name="nodeType">The type of <see cref="IDocNode"/> being attached.</param>
+        /// <param name="nodeDelegate">Optionally, a <see cref="Func{T, TResult}"/> which resolves a new <see cref="IDocNode"/> node.</param>
+        public static void ConfigureElementNode(this ContainerBuilder builder, string name, Type nodeType, Func<IComponentContext, IDocNode>? nodeDelegate = null) => ConfigureNode(builder, name, nodeType, typeof(XElement), nodeDelegate, c => new XElement(name));
     }
 }

@@ -9,7 +9,7 @@ using System.Xml.Linq;
 namespace BassClefStudio.DocLang.Parsing.Base
 {
     /// <summary>
-    /// An <see cref="DocParseService{TNode, TData}"/> for <see cref="IDocContentNode"/>s that parses child elements.
+    /// An <see cref="DocParseService{TNode, TData}"/> for <see cref="IDocHeaderNode"/>s that parses title and name elements.
     /// </summary>
     public class HeaderParser : DocParseService<IDocHeaderNode, XElement>
     {
@@ -17,12 +17,6 @@ namespace BassClefStudio.DocLang.Parsing.Base
         /// An <see cref="IDocParser"/> used for parsing child elements.
         /// </summary>
         public IDocParser? ChildParser { get; set; }
-
-        /// <summary>
-        /// Creates a new <see cref="HeaderParser"/>.
-        /// </summary>
-        public HeaderParser()
-        { }
 
         /// <inheritdoc/>
         protected override bool ReadInternal(IDocHeaderNode node, XElement element)

@@ -18,12 +18,6 @@ namespace BassClefStudio.DocLang.Parsing.Base
         /// </summary>
         public IDocParser? ChildParser { get; set; }
 
-        /// <summary>
-        /// Creates a new <see cref="ContentParser"/>.
-        /// </summary>
-        public ContentParser()
-        { }
-
         /// <inheritdoc/>
         protected override bool ReadInternal(IDocContentNode node, XElement element)
         {
