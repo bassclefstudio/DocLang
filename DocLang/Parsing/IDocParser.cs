@@ -31,9 +31,26 @@ namespace BassClefStudio.DocLang.Parsing
     }
 
     /// <summary>
-    /// A base implementation of <see cref="IDocParser"/> that iterates through a collection of <see cref="IDocParseService"/>s.
+    /// Provides extension methods for the <see cref="IDocParser"/> interface.
     /// </summary>
-    public class DocParser : IDocParser
+    public static class DocParserExtensions
+    {
+        /// <summary>
+        /// Parses data contained in an <see cref="IDocNode"/> to an <see cref="XDocument"/>.
+        /// </summary>
+        /// <param name="node">The <see cref="IDocNode"/> being parsed.</param>
+        /// <returns>A <see cref="XDocument"/> full XML document representing <paramref name="node"/>.</returns>
+        public static XDocument WriteDocument(this IDocParser parser, IDocNode node)
+        {
+            XNode element = parser.Write(node);
+            return new XDocument(new XDeclaration("1.0", "UTF-8", null), element);
+        }
+    }
+
+    /// <summary>
+    /// An internal base implementation of <see cref="IDocParser"/> that iterates through a collection of <see cref="IDocParseService"/>s.
+    /// </summary>
+    internal class DocParser : IDocParser
     {
         /// <summary>
         /// A collection of <see cref="IDocParseService"/>s for parsing nodes.
