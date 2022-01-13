@@ -30,5 +30,15 @@ namespace BassClefStudio.DocLang.Content
         {
             Content = content;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object? obj) => obj is IDocNode node && Equals(node);
+
+        /// <inheritdoc/>
+        public bool Equals(IDocNode? other)
+        {
+            return other is TextNode text
+                && text.Content == this.Content;
+        }
     }
 }

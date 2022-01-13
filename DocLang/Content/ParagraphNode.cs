@@ -33,5 +33,15 @@ namespace BassClefStudio.DocLang.Content
         {
             Content = new List<IDocNode>(content);
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object? obj) => obj is IDocNode node && Equals(node);
+
+        /// <inheritdoc/>
+        public bool Equals(IDocNode? other)
+        {
+            return other is ParagraphNode para
+                && para.Content.SequenceEqual(this.Content);
+        }
     }
 }

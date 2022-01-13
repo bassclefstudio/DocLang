@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,14 @@ namespace BassClefStudio.DocLang.Metadata
         {
             Type = type;
             Name = name;
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            return obj is Author author 
+                && author.Name == this.Name
+                && author.Type == this.Type;
         }
     }
 

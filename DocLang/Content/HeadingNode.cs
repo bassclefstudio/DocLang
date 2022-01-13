@@ -53,5 +53,18 @@ namespace BassClefStudio.DocLang.Content
             Title = new List<IDocNode>();
             Content = new List<IDocNode>();
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object? obj) => obj is IDocNode node && Equals(node);
+
+        /// <inheritdoc/>
+        public virtual bool Equals(IDocNode? other)
+        {
+            return other is HeadingNode heading
+                && heading.Name == this.Name
+                && heading.Id == this.Id
+                && heading.Title.SequenceEqual(this.Title)
+                && heading.Content.SequenceEqual(this.Content);
+        }
     }
 }

@@ -16,7 +16,7 @@ Notable (additional) features of DocLang include:
 - Fully XML-serializable (easy to write your own parser for the language, or add an extension).
 
 # DocLang Syntax
-Writing in DocLang is designed to be easy to learn and use while writing just about anything. Broadly, DocLang syntax uses XML to manage tags and content, similar to HTML or XAML.
+Writing in DocLang is designed to be easy to learn and use while writing just about anything. Broadly, DocLang syntax uses XML to manage tags and content, similar to HTML or XAML[^1].
 
 ```XML
 <Document Name="Test Document" Id="testDoc">
@@ -45,3 +45,5 @@ DocLang XML syntax consists of XML tags (such as `<tag>`, `</tag>`, and `<tag/>`
 
 # Document
 The **Document** is the root *node* of every DocLang file. It contains basic information about the entirety of the document, as well as a content collection of one or more *nodes*. These contain the structure of the document itself.
+
+[^1]: Yes, technically HTML and XAML aren't always "true XML", but anyone familiar with these concepts understands the basics of XML syntax so it's fine for this comparison.

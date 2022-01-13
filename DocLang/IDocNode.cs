@@ -10,7 +10,7 @@ namespace BassClefStudio.DocLang
     /// <summary>
     /// Any node or object that can be added to the DocLang document tree.
     /// </summary>
-    public interface IDocNode
+    public interface IDocNode : IEquatable<IDocNode>
     { }
 
     /// <summary>

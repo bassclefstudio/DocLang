@@ -31,5 +31,19 @@ namespace BassClefStudio.DocLang.Content
         {
             Authors = new List<Author>();
         }
+
+        /// <inheritdoc/>
+        public override bool Equals(object? obj) => obj is IDocNode node && Equals(node);
+
+        /// <inheritdoc/>
+        public override bool Equals(IDocNode? other)
+        {
+            return other is Document document
+                && document.Name == this.Name
+                && document.Id == this.Id
+                && document.Title.SequenceEqual(this.Title)
+                && document.Content.SequenceEqual(this.Content)
+                && document.Authors.SequenceEqual(this.Authors);
+        }
     }
 }

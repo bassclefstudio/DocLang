@@ -1,4 +1,5 @@
-﻿using BassClefStudio.DocLang.Content;
+﻿using Autofac;
+using BassClefStudio.DocLang.Content;
 using BassClefStudio.DocLang.Metadata;
 using BassClefStudio.DocLang.Parsing;
 using BassClefStudio.DocLang.Parsing.Base;
@@ -23,14 +24,15 @@ namespace BassClefStudio.DocLang.Test
         [ClassInitialize]
         public static void Initialize(TestContext context)
         {
+            //// Compare to version 1.0 of the DocLang specification.
             Parser = new XmlParser(BaseDocLangSchema.Version1); ;
         }
 
         [TestMethod]
-        public void TestDocument()
+        public void ReadTestDocument()
         {
             Assert.IsNotNull(Parser, nameof(Parser));
-            //// Version 1.0 of the DocLang specification.
+            //// Full version 1.0 specification
             TextNode docTitleText = new TextNode("My Test Document");
             Document testDocument = new Document("testDoc", "Test Document");
             testDocument.Title.Add(docTitleText);
@@ -45,6 +47,23 @@ namespace BassClefStudio.DocLang.Test
             testDocument.Content.Add(heading1);
             XNode document = Parser.Write(testDocument);
             Console.WriteLine(document.ToString());
+            IDocNode parsed = Parser.Read(document);
+            Assert.AreEqual(testDocument, parsed, "Parsed DocLang document is not equivalent to the payload originally written to XML.");
+        }
+
+        [TestMethod]
+        public void ListServices()
+        {
+            Assert.IsNotNull(Parser, nameof(Parser));
+            Console.WriteLine("Checking IDocParseServices...");
+            var services = Parser.Container.Resolve<IEnumerable<IDocParseService>>();
+            foreach (var service in services.OrderByDescending(s => s.Priority))
+            {
+                Console.WriteLine($"\t[{service.Priority}]: {service.GetType().Name}");
+            }
+            Console.WriteLine("Checking IDocParser...");
+            var parser = Parser.Container.Resolve<IDocParser>();
+            Console.WriteLine($"\t[All]: {parser.GetType().Name}");
         }
     }
 }
