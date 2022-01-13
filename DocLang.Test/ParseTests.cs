@@ -29,22 +29,11 @@ namespace BassClefStudio.DocLang.Test
         }
 
         [TestMethod]
-        public void ReadTestDocument()
+        public void ParseTestDocument()
         {
-            Assert.IsNotNull(Parser, nameof(Parser));
-            //// Full version 1.0 specification
-            TextNode docTitleText = new TextNode("My Test Document");
-            Document testDocument = new Document("testDoc", "Test Document");
-            testDocument.Title.Add(docTitleText);
-            testDocument.Authors.Add(new Author(AuthorType.Creator, "bassclefstudio"));
-            TextNode h1TitleText = new TextNode("First Heading");
-            HeadingNode heading1 = new HeadingNode("h1", "Heading 1");
-            heading1.Title.Add(h1TitleText);
-            ParagraphNode p1 = new ParagraphNode(new TextNode("I'm generally a very boring person, much like this document."));
-            ParagraphNode p2 = new ParagraphNode(new TextNode("Most interestingly, I enjoy taking long walks on the beach."));
-            heading1.Content.Add(p1);
-            heading1.Content.Add(p2);
-            testDocument.Content.Add(heading1);
+            Assert.IsNotNull(Parser, "HtmlDocFormatter was not properly initialized.");
+            //// Test against version 1.0 of the schema.
+            Document testDocument = TestDoc.Version1;
             XNode document = Parser.Write(testDocument);
             Console.WriteLine(document.ToString());
             IDocNode parsed = Parser.Read(document);
@@ -54,7 +43,7 @@ namespace BassClefStudio.DocLang.Test
         [TestMethod]
         public void ListServices()
         {
-            Assert.IsNotNull(Parser, nameof(Parser));
+            Assert.IsNotNull(Parser, "HtmlDocFormatter was not properly initialized.");
             Console.WriteLine("Checking IDocParseServices...");
             var services = Parser.Container.Resolve<IEnumerable<IDocParseService>>();
             foreach (var service in services.OrderByDescending(s => s.Priority))
