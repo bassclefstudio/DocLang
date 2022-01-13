@@ -13,6 +13,11 @@ namespace BassClefStudio.DocLang.Parsing
     public interface IDocParseService
     {
         /// <summary>
+        /// Gets a <see cref="uint"/> priority which defines in which order <see cref="IDocParseService"/>s should read and write content. Generally, this is in descending order.
+        /// </summary>
+        uint Priority { get; }
+
+        /// <summary>
         /// Reads content from the <see cref="XNode"/> XML and adds it to the <see cref="IDocNode"/> being parsed.
         /// </summary>
         /// <param name="node">The <see cref="IDocNode"/> currently being created/parsed.</param>
@@ -36,6 +41,18 @@ namespace BassClefStudio.DocLang.Parsing
     /// <typeparam name="TData">The XML data object that <typeparamref name="TNode"/> nodes are parsed to/from.</typeparam>
     public abstract class DocParseService<TNode, TData> : IDocParseService where TNode : IDocNode where TData : XNode
     {
+        /// <inheritdoc/>
+        public uint Priority { get; }
+
+        /// <summary>
+        /// Creates a new <see cref="DocParseService{TNode, TData}"/> with the given priority.
+        /// </summary>
+        /// <param name="priority">A <see cref="uint"/> priority which defines in which order <see cref="IDocParseService"/>s should read and write content. Generally, this is in descending order.</param>
+        public DocParseService(uint priority = 0)
+        {
+            Priority = priority;
+        }
+
         /// <inheritdoc/>
         public bool Read(IDocNode node, XNode element)
         {

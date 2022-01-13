@@ -58,7 +58,7 @@ namespace BassClefStudio.DocLang.Parsing
         /// <param name="elementConfig">The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="XNode"/>s.</param>
         public DocParser(IEnumerable<IDocParseService> services, IIndex<string, IDocNode> nodeConfig, IIndex<Type, XNode> elementConfig)
         {
-            Services = services;
+            Services = services.OrderByDescending(s => s.Priority);
             NodeConfig = nodeConfig;
             ElementConfig = elementConfig;
         }

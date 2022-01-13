@@ -13,6 +13,9 @@ namespace BassClefStudio.DocLang.Parsing.Base
     /// </summary>
     public class ContentParser : DocParseService<IDocContentNode, XElement>
     {
+        public ContentParser() : base(1)
+        { }
+
         /// <summary>
         /// An <see cref="IDocParser"/> used for parsing child elements.
         /// </summary>

@@ -13,6 +13,9 @@ namespace BassClefStudio.DocLang.Parsing.Base
     /// </summary>
     public class AttributeParser : DocParseService<IDocAttributedNode, XElement>
     {
+        public AttributeParser() : base(2)
+        { }
+
         /// <inheritdoc/>
         protected override bool ReadInternal(IDocAttributedNode node, XElement element)
         {

@@ -13,6 +13,9 @@ namespace BassClefStudio.DocLang.Parsing.Base
     /// </summary>
     public class HeadingParser : DocParseService<IDocHeadingNode, XElement>
     {
+        public HeadingParser() : base(3)
+        { }
+
         /// <summary>
         /// An <see cref="IDocParser"/> used for parsing child elements.
         /// </summary>
