@@ -1,10 +1,12 @@
-﻿using BassClefStudio.DocLang.Content;
+﻿using Autofac;
+using BassClefStudio.DocLang.Content;
+using BassClefStudio.DocLang.Content.Metadata;
+using BassClefStudio.DocLang.Xml;
+using BassClefStudio.NET.Serialization.Natural;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace BassClefStudio.DocLang.Test
@@ -13,39 +15,53 @@ namespace BassClefStudio.DocLang.Test
     public class ParseTests
     {
         /// <summary>
-        /// The <see cref="DocLangParser"/> setup with default settings that will be used as a baseline for parsing <see cref="Document"/>s.
+        /// The <see cref="XmlParser"/> setup with default settings that will be used as a baseline for parsing <see cref="Document"/>s.
         /// </summary>
-        public static DocLangParser? Parser { get; private set; }
+        public static XmlParser? Parser { get; private set; }
 
         [ClassInitialize]
         public static void Initialize(TestContext context)
         {
-            Parser = new DocLangParser();
+            //// Compare to version 1.0 of the DocLang specification.
+            Parser = new XmlParser(XmlParser.CurrentSchemaVersion); ;
         }
 
         [TestMethod]
-        public void TestDocument()
+        public void ReadTestDocument()
         {
             Assert.IsNotNull(Parser, nameof(Parser));
-            //// Version 1.0 of the DocLang specification.
+            //// Full version 1.0 specification
             TextNode docTitleText = new TextNode("My Test Document");
-            ContentNode docTitle = new ContentNode(ContentNode.TitleType);
-            docTitle.AddContent(docTitleText);
-            Document testDocument = new Document("testDoc", "Test Document", docTitle);
-            testDocument.Authors.Add(new Metadata.Author(Metadata.AuthorType.Creator, "bassclefstudio"));
-            TextNode h1TitleText = new TextNode("My Test Document");
-            ContentNode h1Title = new ContentNode(ContentNode.TitleType);
-            h1Title.AddContent(h1TitleText);
-            Heading heading1 = new Heading("h1", "Heading 1", h1Title);
-            ContentNode p1 = new ContentNode(ContentNode.ParagraphType);
-            p1.AddContent(new TextNode("I'm generally a very boring person, much like this document."));
-            ContentNode p2 = new ContentNode(ContentNode.ParagraphType);
-            p2.AddContent(new TextNode("Most interestingly, I enjoy taking long walks on the beach."));
-            heading1.AddContent(p1);
-            heading1.AddContent(p2);
-            testDocument.AddContent(heading1);
-            XDocument document = Parser.Write(testDocument);
+            Document testDocument = new Document("testDoc", "Test Document");
+            testDocument.Title.Add(docTitleText);
+            testDocument.Authors.Add(new Author(AuthorType.Creator, "bassclefstudio"));
+            TextNode h1TitleText = new TextNode("First Heading");
+            HeadingNode heading1 = new HeadingNode("h1", "Heading 1");
+            heading1.Title.Add(h1TitleText);
+            ParagraphNode p1 = new ParagraphNode(new TextNode("I'm generally a very boring person, much like this document."));
+            ParagraphNode p2 = new ParagraphNode(new TextNode("Most interestingly, I enjoy taking long walks on the beach."));
+            heading1.Content.Add(p1);
+            heading1.Content.Add(p2);
+            testDocument.Content.Add(heading1);
+            XNode document = Parser.Write(testDocument);
             Console.WriteLine(document.ToString());
+            IDocNode parsed = Parser.Read(document);
+            Assert.AreEqual(testDocument, parsed, "Parsed DocLang document is not equivalent to the payload originally written to XML.");
+        }
+
+        [TestMethod]
+        public void ListServices()
+        {
+            Assert.IsNotNull(Parser, nameof(Parser));
+            Console.WriteLine($"Checking {nameof(INaturalSerializerService<IDocNode, XNode>)}s...");
+            var services = Parser.Container.Resolve<IEnumerable<INaturalSerializerService<IDocNode, XNode>>>();
+            foreach (var service in services.OrderByDescending(s => s.Priority))
+            {
+                Console.WriteLine($"\t[{service.Priority}]: {service.GetType().Name}");
+            }
+            Console.WriteLine($"Checking {nameof(INaturalSerializer<IDocNode, XNode>)}...");
+            var parser = Parser.Container.Resolve<INaturalSerializer<IDocNode, XNode>>();
+            Console.WriteLine($"\t[All]: {parser.GetType().Name}");
         }
     }
 }

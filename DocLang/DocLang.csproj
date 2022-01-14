@@ -9,7 +9,7 @@
     <Version>0.0.1-preview.1</Version>
     <Authors>BassClefStudio</Authors>
     <Description>An easy-to-use, but fully-featured semantic document markup language.</Description>
-    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://github.com/bassclefstudio/DocLang</PackageProjectUrl>
     <RepositoryUrl>https://github.com/bassclefstudio/DocLang.git</RepositoryUrl>
@@ -20,6 +20,10 @@
     <PackageReference Include="CommunityToolkit.Diagnostics" Version="7.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Serialization.Natural\Serialization.Natural.csproj" />
   </ItemGroup>
 
 </Project>

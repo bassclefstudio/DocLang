@@ -1,78 +1,44 @@
-﻿using BassClefStudio.DocLang.Parsing;
-using CommunityToolkit.Diagnostics;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace BassClefStudio.DocLang.Content
 {
     /// <summary>
-    /// A basic implementation of <see cref="IDocTextNode"/> for plain text.
+    /// A base implementation of <see cref="IDocTextNode"/> for mixed-content plain text.
     /// </summary>
     public class TextNode : IDocTextNode
     {
-        /// <summary>
-        /// The XML/<see cref="IDocNode.NodeType"/> type for <see cref="TextNode"/>s.
-        /// </summary>
-        public const string Type = "Text";
         /// <inheritdoc/>
-        public string NodeType { get; } = Type;
-
-        /// <inheritdoc/>
-        public string Text { get; set; }
-
-        /// <inheritdoc/>
-        public IDocNode? Parent { get; set; }
+        public string Content { get; set; }
 
         /// <summary>
-        /// Creates a new <see cref="TextNode"/> for the given <see cref="string"/> of text.
+        /// Creates a new <see cref="TextNode"/>.
         /// </summary>
-        /// <param name="text">The <see cref="string"/> text that is contained in this <see cref="IDocTextNode"/>.</param>
-        public TextNode(string text)
+        public TextNode()
         {
-            Text = text;
+            Content = string.Empty;
         }
-    }
-
-    /// <summary>
-    /// An <see cref="IDocParser"/> for the <see cref="TextNode"/> node (note that reading <see cref="TextNode"/>s often takes place in mixed-content parsing - see <seealso cref="DocParserExtensions.WriteContent(IDocContentNode, IDocParserCollection, Microsoft.Extensions.Logging.ILogger?)"/>).
-    /// </summary>
-    public class TextNodeParser : IDocParser
-    {
-        /// <summary>
-        /// The injected <see cref="ILogger"/>.
-        /// </summary>
-        public ILogger<TextNodeParser>? Logger { get; set; }
 
         /// <summary>
-        /// Creates a new <see cref="TextNodeParser"/>.
+        /// Creates a new <see cref="TextNode"/> with the given content.
         /// </summary>
-        public TextNodeParser()
-        { }
-
-        /// <inheritdoc/>
-        public IEnumerable<string> SupportedNodes { get; }
-            = new string[]
-            {
-                TextNode.Type
-            };
-
-        /// <inheritdoc/>
-        public IDocNode Read(XElement element)
+        /// <param name="content">The <see cref="string"/> text content of this <see cref="IDocTextNode"/>.</param>
+        public TextNode(string content)
         {
-            return new TextNode(element.Value);
+            Content = content;
         }
 
         /// <inheritdoc/>
-        public XNode Write(IDocNode node)
+        public override bool Equals(object? obj) => obj is IDocNode node && Equals(node);
+
+        /// <inheritdoc/>
+        public bool Equals(IDocNode? other)
         {
-            Guard.IsAssignableToType<TextNode>(node, nameof(node));
-            TextNode textNode = (TextNode)node;
-            return new XText(textNode.Text);
+            return other is TextNode text
+                && text.Content == this.Content;
         }
     }
 }

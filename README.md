@@ -16,18 +16,24 @@ Notable (additional) features of DocLang include:
 - Fully XML-serializable (easy to write your own parser for the language, or add an extension).
 
 # DocLang Syntax
-Writing in DocLang is designed to be easy to learn and use while writing just about anything. Broadly, DocLang syntax uses XML to manage tags and content, similar to HTML or XAML.
+Writing in DocLang is designed to be easy to learn and use while writing just about anything. Broadly, DocLang syntax uses XML to manage tags and content, similar to HTML or XAML[^1].
 
 ```XML
-<Document Id="testDoc" Name="Test Document">
+<Document Name="Test Document" Id="testDoc">
   <Title>My Test Document</Title>
-  <Author Type="Creator">bassclefstudio</Author>
+  <Authors>
+    <Author Type="Creator">bassclefstudio</Author>
+  </Authors>
   <Content>
-    <Heading Id="h1" Name="Heading 1">
+    <Heading Name="Heading 1" Id="h1">
       <Title>First Heading</Title>
       <Content>
-        <Paragraph>I'm generally a very boring person, much like this document.</Paragraph>
-        <Paragraph>Most interestingly, I enjoy taking long walks on the beach.</Paragraph>
+        <Paragraph>
+            I'm generally a very boring person, much like this document.
+        </Paragraph>
+        <Paragraph>
+            Most interestingly, I enjoy taking long walks on the beach.
+        </Paragraph>
       </Content>
     </Heading>
   </Content>
@@ -39,3 +45,5 @@ DocLang XML syntax consists of XML tags (such as `<tag>`, `</tag>`, and `<tag/>`
 
 # Document
 The **Document** is the root *node* of every DocLang file. It contains basic information about the entirety of the document, as well as a content collection of one or more *nodes*. These contain the structure of the document itself.
+
+[^1]: Yes, technically HTML and XAML aren't always "true XML", but anyone familiar with these concepts understands the basics of XML syntax so it's fine for this comparison.
