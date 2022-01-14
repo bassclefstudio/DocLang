@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace BassClefStudio.DocLang.Parsing.Base
+namespace BassClefStudio.DocLang.Xml.Base
 {
     /// <summary>
     /// An <see cref="DocParseService{TNode, TData}"/> for <see cref="IDocTextNode"/>s that parses plain text content.

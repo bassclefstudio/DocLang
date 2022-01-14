@@ -12,12 +12,12 @@ namespace BassClefStudio.NET.Serialization.Natural
     /// </summary>
     /// <typeparam name="T">The type of .NET objects being serialized and deserialized.</typeparam>
     /// <typeparam name="TData">The type of the data used to represent <typeparamref name="T"/> instances.</typeparam>
-    public abstract class NaturalSerializerConfig<T, TData> : INaturalSerializer<T, TData>
+    public abstract class NaturalSerializerConfig<T, TData> : INaturalSerializer<T, TData>, IDisposable
     {
         /// <summary>
         /// The <see cref="IContainer"/> used to resolve serialization services internally.
         /// </summary>
-        protected IContainer Container { get; }
+        public IContainer Container { get; }
 
         /// <summary>
         /// Creates a new <see cref="NaturalSerializerConfig{T, TData}"/> and configures the DI container.
@@ -46,6 +46,9 @@ namespace BassClefStudio.NET.Serialization.Natural
         {
             return Container.Resolve<INaturalSerializer<T, TData>>().Write(content);
         }
+
+        /// <inheritdoc/>
+        public void Dispose() => Container.Dispose();
     }
 
     /// <summary>

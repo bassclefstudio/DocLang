@@ -1,4 +1,4 @@
-﻿using BassClefStudio.DocLang.Metadata;
+﻿using BassClefStudio.DocLang.Content.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;

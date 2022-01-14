@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace BassClefStudio.DocLang.Parsing.Base
+namespace BassClefStudio.DocLang.Xml.Base
 {
     /// <summary>
     /// An <see cref="DocParseService{TNode, TData}"/> for <see cref="IDocRefNode"/>s that parses node IDs.

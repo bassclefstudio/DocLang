@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using BassClefStudio.DocLang.Content;
+using BassClefStudio.NET.Serialization.Natural;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,42 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace BassClefStudio.DocLang.Parsing.Base
+namespace BassClefStudio.DocLang.Xml
 {
     /// <summary>
-    /// Provides a base <see cref="IDocLangSchema"/> implementation that associates basic <see cref="string"/> element names and their DocLang <see cref="IDocNode"/> equivalents.
+    /// A collection of extension methods for <see cref="ContainerBuilder"/> and data manipulation customized for use in the DocLang XML parser.
     /// </summary>
-    public class BaseDocLangSchema : IDocLangSchema
-    {
-        public static readonly BaseDocLangSchema Version1 = new BaseDocLangSchema();
-
-        /// <summary>
-        /// Creates a new <see cref="BaseDocLangSchema"/> for the given configuration and schema version.
-        /// </summary>
-        protected BaseDocLangSchema()
-        {
-            //// TODO: Add version-specific flags for enabling different features.
-        }
-
-        /// <inheritdoc/>
-        public virtual void ConfigureSchema(ContainerBuilder builder)
-        {
-            //// Setup the default node (mixed-conent text) as TextNode:
-            builder.ConfigureNode<TextNode, XText>(string.Empty, elementDelegate: c => new XText(string.Empty));
-
-            //// Headers setup:
-            builder.ConfigureElementNode<HeadingNode>("Heading");
-            builder.ConfigureElementNode<Document>("Document");
-
-            //// Content blocks:
-            builder.ConfigureElementNode<ParagraphNode>("Paragraph");
-        }
-    }
-
-    /// <summary>
-    /// Provides extension methods for the <see cref="ContainerBuilder"/> class for adding <see cref="IDocLangSchema"/> configurations.
-    /// </summary>
-    public static class DocLangSchemaExtensions
+    public static class XmlParseExtensions
     {
         /// <summary>
         /// Attaches the given <typeparamref name="TNode"/> node and the <typeparamref name="TData"/> XML element types to a <see cref="string"/> DocLang element name.
@@ -61,7 +31,7 @@ namespace BassClefStudio.DocLang.Parsing.Base
             }
             else
             {
-                builder.Register<TNode>(nodeDelegate).Named<IDocNode>(name);
+                builder.Register(nodeDelegate).Named<IDocNode>(name);
             }
 
             if (elementDelegate is null)
@@ -70,7 +40,7 @@ namespace BassClefStudio.DocLang.Parsing.Base
             }
             else
             {
-                builder.Register<TData>(elementDelegate).Keyed<XNode>(typeof(TNode));
+                builder.Register(elementDelegate).Keyed<XNode>(typeof(TNode));
             }
         }
 
@@ -121,5 +91,53 @@ namespace BassClefStudio.DocLang.Parsing.Base
         /// <param name="nodeType">The type of <see cref="IDocNode"/> being attached.</param>
         /// <param name="nodeDelegate">Optionally, a <see cref="Func{T, TResult}"/> which resolves a new <see cref="IDocNode"/> node.</param>
         public static void ConfigureElementNode(this ContainerBuilder builder, string name, Type nodeType, Func<IComponentContext, IDocNode>? nodeDelegate = null) => ConfigureNode(builder, name, nodeType, typeof(XElement), nodeDelegate, c => new XElement(name));
+
+        /// <summary>
+        /// Enforces the presence of a child <see cref="XElement"/> with a given <see cref="string"/> key.
+        /// </summary>
+        /// <param name="parent">The <see cref="XContainer"/> XML parent element.</param>
+        /// <param name="key">The required <see cref="string"/> name of the element.</param>
+        /// <returns>The <see cref="XElement"/> child of <paramref name="parent"/> with the key/name <paramref name="key"/>.</returns>
+        public static XElement EnforceElement(this XContainer parent, string key)
+        {
+            var child = parent.Element(key);
+            if (child is null)
+            {
+                throw new ParseSchemaException($"Expected required element {key} in XML {parent}.");
+            }
+            return child;
+        }
+
+        /// <summary>
+        /// Enforces the presence of a child <see cref="XAttribute"/> with a given <see cref="string"/> key.
+        /// </summary>
+        /// <param name="parent">The <see cref="XElement"/> XML parent element.</param>
+        /// <param name="key">The required <see cref="string"/> name of the element.</param>
+        /// <returns>The <see cref="XAttribute"/> child of <paramref name="parent"/> with the key/name <paramref name="key"/>.</returns>
+        public static XAttribute EnforceAttribute(this XElement parent, string key)
+        {
+            var child = parent.Attribute(key);
+            if (child is null)
+            {
+                throw new ParseSchemaException($"Expected required attribute {key} in XML {parent}.");
+            }
+            return child;
+        }
+
+        /// <summary>
+        /// Enforces the presence of at least one child <see cref="XElement"/> with a given <see cref="string"/> key.
+        /// </summary>
+        /// <param name="parent">The <see cref="XContainer"/> XML parent element.</param>
+        /// <param name="key">The required <see cref="string"/> name of the element.</param>
+        /// <returns>The collection of <see cref="XElement"/> children of <paramref name="parent"/> with the key/name <paramref name="key"/>.</returns>
+        public static IEnumerable<XElement> EnforceElements(this XContainer parent, string key)
+        {
+            var children = parent.Elements(key);
+            if (!children.Any())
+            {
+                throw new ParseSchemaException($"Expected one or more required {key} elements in XML {parent}.");
+            }
+            return children;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using BassClefStudio.DocLang.Metadata;
+﻿using BassClefStudio.DocLang.Content.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace BassClefStudio.DocLang.Parsing.Base
+namespace BassClefStudio.DocLang.Xml.Base
 {
     /// <summary>
     /// An <see cref="DocParseService{TNode, TData}"/> for <see cref="IDocAttributedNode"/>s that parses attributed authors.

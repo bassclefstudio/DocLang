@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BassClefStudio.DocLang.Metadata
+namespace BassClefStudio.DocLang.Content.Metadata
 {
     /// <summary>
     /// A representation of a person who contributed to part of a <see cref="Document"/>.

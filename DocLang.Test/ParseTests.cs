@@ -1,14 +1,12 @@
 ﻿using Autofac;
 using BassClefStudio.DocLang.Content;
-using BassClefStudio.DocLang.Metadata;
-using BassClefStudio.DocLang.Parsing;
-using BassClefStudio.DocLang.Parsing.Base;
+using BassClefStudio.DocLang.Content.Metadata;
+using BassClefStudio.DocLang.Xml;
+using BassClefStudio.NET.Serialization.Natural;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace BassClefStudio.DocLang.Test
@@ -25,7 +23,7 @@ namespace BassClefStudio.DocLang.Test
         public static void Initialize(TestContext context)
         {
             //// Compare to version 1.0 of the DocLang specification.
-            Parser = new XmlParser(BaseDocLangSchema.Version1); ;
+            Parser = new XmlParser(XmlParser.CurrentSchemaVersion); ;
         }
 
         [TestMethod]
@@ -55,14 +53,14 @@ namespace BassClefStudio.DocLang.Test
         public void ListServices()
         {
             Assert.IsNotNull(Parser, nameof(Parser));
-            Console.WriteLine("Checking IDocParseServices...");
-            var services = Parser.Container.Resolve<IEnumerable<IDocParseService>>();
+            Console.WriteLine($"Checking {nameof(INaturalSerializerService<IDocNode, XNode>)}s...");
+            var services = Parser.Container.Resolve<IEnumerable<INaturalSerializerService<IDocNode, XNode>>>();
             foreach (var service in services.OrderByDescending(s => s.Priority))
             {
                 Console.WriteLine($"\t[{service.Priority}]: {service.GetType().Name}");
             }
-            Console.WriteLine("Checking IDocParser...");
-            var parser = Parser.Container.Resolve<IDocParser>();
+            Console.WriteLine($"Checking {nameof(INaturalSerializer<IDocNode, XNode>)}...");
+            var parser = Parser.Container.Resolve<INaturalSerializer<IDocNode, XNode>>();
             Console.WriteLine($"\t[All]: {parser.GetType().Name}");
         }
     }

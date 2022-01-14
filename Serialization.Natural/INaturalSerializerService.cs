@@ -47,6 +47,26 @@ namespace BassClefStudio.NET.Serialization.Natural
         /// <inheritdoc/>
         public uint Priority { get; }
 
+        private INaturalSerializer<T, TData>? childService;
+        /// <summary>
+        /// An injected service for allowing this <see cref="NaturalSerializerService{T, TActual, TData, TDataActual}"/> to serialize child objects.
+        /// </summary>
+        public INaturalSerializer<T, TData> ChildService 
+        {
+            get
+            {
+                if (childService is null)
+                {
+                    throw new InvalidOperationException("Child serialization service has not yet been initialized.");
+                }
+                else
+                {
+                    return childService;
+                }
+            }
+            set => childService = value;
+        }
+
         /// <summary>
         /// Creates a new <see cref="NaturalSerializerService{T, TActual, TData, TDataActual}"/> with the given priority.
         /// </summary>
@@ -72,6 +92,13 @@ namespace BassClefStudio.NET.Serialization.Natural
         /// <inheritdoc cref="Read(T, TData)"/>
         protected abstract bool ReadInternal(TActual content, TDataActual data);
 
+        /// <summary>
+        /// Attempts to read a child element from <typeparamref name="TData"/> data.
+        /// </summary>
+        /// <param name="data">The <typeparamref name="TData"/> data to read.</param>
+        /// <returns>The <typeparamref name="T"/> represented by <paramref name="data"/>.</returns>
+        public T ReadChild(TData data) => ChildService.Read(data);
+
         /// <inheritdoc/>
         public bool Write(T content, TData data)
         {
@@ -87,6 +114,13 @@ namespace BassClefStudio.NET.Serialization.Natural
 
         /// <inheritdoc cref="Write(T, TData)"/>
         protected abstract bool WriteInternal(TActual content, TDataActual data);
+
+        /// <summary>
+        /// Attempts to write a child element to <typeparamref name="TData"/> data.
+        /// </summary>
+        /// <param name="content">The child element to write.</param>
+        /// <returns>The <typeparamref name="TData"/> representation of <paramref name="content"/>.</returns>
+        public TData WriteChild(T content) => ChildService.Write(content);
 
     }
 }
