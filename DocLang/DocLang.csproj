@@ -4,22 +4,17 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>BassClefStudio.DocLang</AssemblyName>
-    <RootNamespace>BassClefStudio.DocLang</RootNamespace>
-    <Version>0.0.1-preview.1</Version>
-    <Authors>BassClefStudio</Authors>
-    <Description>An easy-to-use, but fully-featured semantic document markup language.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageProjectUrl>https://github.com/bassclefstudio/DocLang</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/bassclefstudio/DocLang.git</RepositoryUrl>
+    <AssemblyName>BassClefStudio.DocLang.Html</AssemblyName>
+    <RootNamespace>BassClefStudio.DocLang.Html</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.3.0" />
-    <PackageReference Include="CommunityToolkit.Diagnostics" Version="7.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
+    <None Remove="Transform.xsl" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Transform.xsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

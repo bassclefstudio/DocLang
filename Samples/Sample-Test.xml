@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-model href="..\Schema\v1.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<?xml-model href="../DocLang/Schema/version1.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <Document Name="Test Document" Id="testDoc">
     <Title>My Test Document</Title>
     <Authors>
