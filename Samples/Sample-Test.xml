@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="..\Schema\v1.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<Document Name="Test Document" Id="testDoc">
+    <Title>My Test Document</Title>
+    <Authors>
+        <Author Type="Creator">bassclefstudio</Author>
+    </Authors>
+    <Content>
+        <Heading Name="Heading 1" Id="h1">
+            <Title>First Heading</Title>
+            <Content>
+                <Paragraph>I'm generally a very boring person, much like this document.</Paragraph>
+                <Paragraph>Most interestingly, I enjoy taking long walks on the beach.</Paragraph>
+            </Content>
+        </Heading>
+    </Content>
+</Document>

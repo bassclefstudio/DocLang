@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Autofac.Features.Indexed;
+using BassClefStudio.DocLang.Content;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,39 +11,112 @@ using System.Xml.Linq;
 namespace BassClefStudio.DocLang.Parsing
 {
     /// <summary>
-    /// Represents a service that can parse <see cref="IDocNode"/>s to and from their XML representations.
+    /// Represents a full service (usually made up of one or more <see cref="IDocParseService"/>s) for parsing <see cref="IDocNode"/> nodes to and from XML.
     /// </summary>
-    public interface IDocParser : IParser<IDocNode>
+    public interface IDocParser
     {
         /// <summary>
-        /// Gets a collection of <see cref="string"/> XML node names or <see cref="IDocNode.NodeType"/>s that this <see cref="IDocParser"/> supports.
+        /// Parses data contained in an <see cref="IDocNode"/> to an <see cref="XNode"/>.
         /// </summary>
-        IEnumerable<string> SupportedNodes { get; }
+        /// <param name="node">The <see cref="IDocNode"/> being parsed.</param>
+        /// <returns>A <see cref="XNode"/> object representing <paramref name="node"/>.</returns>
+        public XNode Write(IDocNode node);
+
+        /// <summary>
+        /// Parses data contained in an <see cref="XNode"/> to an <see cref="IDocNode"/>.
+        /// </summary>
+        /// <param name="data">The <see cref="XNode"/> being parsed.</param>
+        /// <returns>An <see cref="IDocNode"/> node equivalent to the representation of <paramref name="data"/>.</returns>
+        public IDocNode Read(XNode data);
     }
 
-    public abstract class DocParser : IDocParser
+    /// <summary>
+    /// Provides extension methods for the <see cref="IDocParser"/> interface.
+    /// </summary>
+    public static class DocParserExtensions
     {
-        /// <inheritdoc/>
-        public IEnumerable<string> SupportedNodes { get; }
+        /// <summary>
+        /// Parses data contained in an <see cref="IDocNode"/> to an <see cref="XDocument"/>.
+        /// </summary>
+        /// <param name="node">The <see cref="IDocNode"/> being parsed.</param>
+        /// <returns>A <see cref="XDocument"/> full XML document representing <paramref name="node"/>.</returns>
+        public static XDocument WriteDocument(this IDocParser parser, IDocNode node)
+        {
+            XNode element = parser.Write(node);
+            return new XDocument(new XDeclaration("1.0", "UTF-8", null), element);
+        }
+    }
+
+    /// <summary>
+    /// An internal base implementation of <see cref="IDocParser"/> that iterates through a collection of <see cref="IDocParseService"/>s.
+    /// </summary>
+    internal class DocParser : IDocParser
+    {
+        /// <summary>
+        /// A collection of <see cref="IDocParseService"/>s for parsing nodes.
+        /// </summary>
+        public IEnumerable<IDocParseService> Services { get; }
 
         /// <summary>
-        /// An <see cref="IDocParserCollection"/> containing <see cref="IDocParser"/>s for any child items.
+        /// The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="IDocNode"/>s.
         /// </summary>
-        public IDocParserCollection? ChildParsers { get; set; }
+        public IIndex<string, IDocNode> NodeConfig { get; }
+
+        /// <summary>
+        /// The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="XNode"/>s.
+        /// </summary>
+        public IIndex<Type, XNode> ElementConfig { get; }
 
         /// <summary>
         /// Creates a new <see cref="DocParser"/>.
         /// </summary>
-        /// <param name="supported">The <see cref="string"/> XML node names or <see cref="IDocNode.NodeType"/>s that this <see cref="DocParser"/> supports.</param>
-        public DocParser(params string[] supported)
+        /// <param name="services">A collection of <see cref="IDocParseService"/>s for parsing nodes.</param>
+        /// <param name="nodeConfig">The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="IDocNode"/>s.</param>
+        /// <param name="elementConfig">The <see cref="IIndex{TKey, TValue}"/> for configuring and constructing new <see cref="XNode"/>s.</param>
+        public DocParser(IEnumerable<IDocParseService> services, IIndex<string, IDocNode> nodeConfig, IIndex<Type, XNode> elementConfig)
         {
-            SupportedNodes = supported;
+            Services = services.OrderByDescending(s => s.Priority);
+            NodeConfig = nodeConfig;
+            ElementConfig = elementConfig;
         }
 
         /// <inheritdoc/>
-        public abstract IDocNode Read(XElement element);
+        public IDocNode Read(XNode data)
+        {
+            Guard.IsNotNull(Services, nameof(Services));
+            //// Improve IDocNode constructor code?
+            IDocNode? node;
+            if (data is XText text)
+            {
+                node = NodeConfig[string.Empty];
+            }
+            else if (data is XElement element)
+            {
+                node = NodeConfig[element.Name.LocalName];
+            }
+            else
+            {
+                throw new ParseSchemaException($"Failed to create new IDocNode: No node type registered for {data}.");
+            }
+
+            foreach (var service in Services)
+            {
+                service.Read(node, data);
+            }
+            return node;
+        }
 
         /// <inheritdoc/>
-        public abstract XNode Write(IDocNode node);
+        public XNode Write(IDocNode node)
+        {
+            Guard.IsNotNull(Services, nameof(Services));
+            //// Improve XNode constructor code?
+            XNode element = ElementConfig[node.GetType()];
+            foreach (var service in Services)
+            {
+                service.Write(node, element);
+            }
+            return element;
+        }
     }
 }

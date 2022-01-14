@@ -1,10 +1,9 @@
-﻿using BassClefStudio.DocLang.Parsing;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace BassClefStudio.DocLang.Metadata
 {
@@ -33,6 +32,14 @@ namespace BassClefStudio.DocLang.Metadata
             Type = type;
             Name = name;
         }
+
+        /// <inheritdoc/>
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            return obj is Author author 
+                && author.Name == this.Name
+                && author.Type == this.Type;
+        }
     }
 
     /// <summary>
@@ -59,23 +66,5 @@ namespace BassClefStudio.DocLang.Metadata
         /// This <see cref="Author"/> is responsible for publishing the completed document.
         /// </summary>
         Publisher = 3
-    }
-
-    public class AuthorParser : IParser<Author>
-    {
-        /// <inheritdoc/>
-        public Author Read(XElement element)
-        {
-            return new Author(Enum.Parse<AuthorType>(element.GetAttribute("Type").Value), element.Value);
-        }
-
-        /// <inheritdoc/>
-        public XNode Write(Author node)
-        {
-            XElement element = new XElement("Author");
-            element.SetAttributeValue("Type", node.Type.ToString());
-            element.Value = node.Name;
-            return element;
-        }
     }
 }
