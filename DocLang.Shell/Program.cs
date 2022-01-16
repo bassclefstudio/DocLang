@@ -56,7 +56,7 @@ await root.InvokeAsync(args);
 async Task ConvertAsync(FileInfo inFile, ShellContentType outContent, FileInfo outFile)
 {
     using (var readFile = inFile.OpenRead())
-    using (var writeFile = outFile.Create())
+    using (var writeFile = outFile.Exists ? outFile.OpenWrite() : outFile.Create())
     {
         var inputDocType = supportedTypes[ShellContentType.DocLang];
         var outputDocType = supportedTypes[outContent];
@@ -72,16 +72,12 @@ async Task ConvertAsync(FileInfo inFile, ShellContentType outContent, FileInfo o
 
         readFile.Seek(0, SeekOrigin.Begin);
 
-        foreach (var f in formatters)
-        {
-            Console.WriteLine($"In: {f.InputType}; Out: {f.OutputType}");
-        }
-
         var formatter = formatters.FirstOrDefault(f => f.InputType.Is(inputDocType) && f.OutputType.Is(outputDocType));
         if (formatter is null)
         {
             throw new InvalidOperationException($"Could not find a document formatter for converting between {inputDocType} and {outputDocType}.");
         }
+        Console.WriteLine($"In: {formatter.InputType}; Out: {formatter.OutputType}");
         await formatter.InitializeAsync();
         await formatter.ConvertAsync(readFile, writeFile);
     }
