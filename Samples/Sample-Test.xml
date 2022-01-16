@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-model href="../DocLang/Schema/version1.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<Document Name="Test Document" Id="testDoc">
+<Document 
+    xmlns="http://bassclefstudio.dev/DocLang/v1/Base"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://bassclefstudio.dev/DocLang/v1/Base ../DocLang/Xml/Base-v1.xsd"
+    Name="Test Document"
+    Id="testDoc">
     <Title>My Test Document</Title>
     <Authors>
         <Author Type="Creator">bassclefstudio</Author>

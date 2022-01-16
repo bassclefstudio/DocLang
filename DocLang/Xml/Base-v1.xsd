@@ -1,5 +1,10 @@
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-    <xs:element name="Document" type="Document"></xs:element>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    xmlns="http://bassclefstudio.dev/DocLang/v1/Base"
+    targetNamespace="http://bassclefstudio.dev/DocLang/v1/Base">
+    <xs:element name="Document" type="Document">
+    </xs:element>
     <xs:complexType name="Content" mixed="true">
         <xs:annotation>
             <xs:documentation>Represents a collection of Node objects, interspersed optionally with text content, that can be written into a DocLang document body.</xs:documentation>

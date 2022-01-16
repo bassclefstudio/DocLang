@@ -4,16 +4,22 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>BassClefStudio.DocLang.Html</AssemblyName>
-    <RootNamespace>BassClefStudio.DocLang.Html</RootNamespace>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>BassClefStudio.DocLang</AssemblyName>
+    <RootNamespace>BassClefStudio.DocLang</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Xml\Base-v1.0.xsd" />
     <None Remove="Transform.xsl" />
+    <None Remove="Xml\Base-v1.xsd" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Transform.xsl">
+    <EmbeddedResource Include="Web\Base-v1.xsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Xml\Base-v1.xsd">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

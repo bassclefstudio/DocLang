@@ -48,10 +48,11 @@
 
   <!-- Paragraphs -->
   <xsl:template match="Paragraph">
-    <div class="paragraph-container container"></div>
-    <p class="paragraph">
-      <xsl:apply-templates />
-    </p>
+	  <div class="paragraph-container container">
+		  <p class="paragraph">
+			  <xsl:apply-templates />
+		  </p>
+	  </div>
   </xsl:template>
 
   <xsl:template match="Heading">
