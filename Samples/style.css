@@ -1,0 +1,22 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: medium;
+    background-color: #eeeeff;
+    color: black;
+}
+ 
+a {
+    color: #aaaaff;
+}
+
+.toc {
+    fill: #8888ff;
+    margin: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    width: 50%;
+}
+
+.toc h2 {
+    margin: 0;
+}

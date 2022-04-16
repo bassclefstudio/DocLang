@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BassClefStudio.DocLang
+﻿namespace BassClefStudio.DocLang
 {
     /// <summary>
     /// Provides an interface for services that can validate DocLang documents of a specific schema.
     /// </summary>
-    public interface IDocValidator
+    public interface IDocValidator : IDisposable
     {
         /// <summary>
         /// The type of documents this <see cref="IDocValidator"/> checks.

@@ -23,4 +23,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Base Libraries\StorageLib\StorageLib\StorageLib.csproj" />
+  </ItemGroup>
 </Project>

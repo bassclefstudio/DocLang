@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mime;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using System.Xml;
 using System.Xml.Schema;
 
 namespace BassClefStudio.DocLang.Xml
 {
     /// <summary>
-    /// 
+    /// Provides an <see cref="IDocValidator"/> for base DocLang XML files.
     /// </summary>
     public class DocLangValidator : IDocValidator
     {
@@ -51,16 +45,25 @@ namespace BassClefStudio.DocLang.Xml
         /// <param name="e">The <see cref="ValidationEventArgs"/> schema validation message.</param>
         private void SchemaValidationEvent(object? sender, ValidationEventArgs e)
         {
-            if (e.Severity == XmlSeverityType.Warning)
+            using (var errStream = Console.OpenStandardError())
+            using (var err = new StreamWriter(errStream))
             {
-                Console.Write("WARNING: ");
-                Console.WriteLine(e.Message);
-            }
-            else if (e.Severity == XmlSeverityType.Error)
-            {
-                Console.Write("ERROR: ");
-                Console.WriteLine(e.Message);
+                if (e.Severity == XmlSeverityType.Warning)
+                {
+                    err.Write("WARNING: ");
+                    err.WriteLine(e.Message);
+                }
+                else if (e.Severity == XmlSeverityType.Error)
+                {
+                    err.Write("ERROR: ");
+                    err.WriteLine(e.Message);
+                }
+                err.Flush();
             }
         }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        { }
     }
 }

@@ -42,7 +42,7 @@ namespace BassClefStudio.DocLang.Xml
             using (var styleReader = XmlReader.Create(styleStream))
             {
                 await Task.Run(() =>
-                    Transform.Load(styleReader));
+                    Transform.Load(styleReader, XsltSettings.Default, null));
             }
         }
 

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BassClefStudio.DocLang
+﻿namespace BassClefStudio.DocLang
 {
     /// <summary>
     /// Provides an interface for services that can transform DocLang XML into a certain output type (such as Markdown, HTML, or Word).

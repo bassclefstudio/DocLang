@@ -1,0 +1,5 @@
+<Site>
+    <Template Key="Default">template.html</Template>
+    <Page Template="Default" Destination="index.html">Sample.xml</Page>
+    <Style Key="Main">style.css</Style>
+</Site>

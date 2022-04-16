@@ -13,7 +13,7 @@
         <Heading Name="Heading 1" Id="h1">
             <Title>First Heading</Title>
             <Content>
-                <Paragraph>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. A diam maecenas sed enim ut sem. Integer quis auctor elit sed vulputate mi sit. Vitae justo eget magna fermentum. Malesuada pellentesque elit eget gravida cum. Nunc scelerisque viverra mauris in. Pretium aenean pharetra magna ac placerat vestibulum. Vel eros donec ac odio tempor orci dapibus. Enim nunc faucibus a pellentesque sit amet porttitor eget dolor. Pharetra sit amet aliquam id. Nibh sed pulvinar proin gravida hendrerit. Pellentesque eu tincidunt tortor aliquam nulla facilisi.</Paragraph>
+                <Paragraph><Bold>Lorem ipsum dolor sit amet, consectetur adipiscing elit,</Bold> sed do eiusmod tempor incididunt <Italic>ut labore et dolore magna aliqua.</Italic> A diam maecenas sed enim ut sem. Integer quis auctor elit sed vulputate mi sit. Vitae justo eget magna fermentum. Malesuada pellentesque elit eget gravida cum. Nunc scelerisque viverra mauris in. Pretium aenean pharetra magna ac placerat vestibulum. Vel eros donec ac odio tempor orci dapibus. Enim nunc faucibus a pellentesque sit amet porttitor eget dolor. Pharetra sit amet aliquam id. Nibh sed pulvinar proin gravida hendrerit. Pellentesque eu tincidunt tortor aliquam nulla facilisi.</Paragraph>
                 <Paragraph>Lobortis scelerisque fermentum dui faucibus in ornare quam. Vitae auctor eu augue ut lectus arcu bibendum at. Egestas maecenas pharetra convallis posuere morbi leo urna. Ut sem viverra aliquet eget sit amet tellus cras adipiscing. At auctor urna nunc id cursus. Consectetur a erat nam at. Elit duis tristique sollicitudin nibh sit amet commodo nulla facilisi. Luctus venenatis lectus magna fringilla. Mattis pellentesque id nibh tortor id aliquet lectus proin. Interdum velit laoreet id donec. Quam adipiscing vitae proin sagittis nisl rhoncus mattis rhoncus urna. Mattis vulputate enim nulla aliquet porttitor. Facilisis sed odio morbi quis. Ut tristique et egestas quis ipsum suspendisse. Maecenas accumsan lacus vel facilisis. Eu ultrices vitae auctor eu augue. Et tortor consequat id porta nibh venenatis cras. Aliquam ultrices sagittis orci a scelerisque purus semper.</Paragraph>
                 <Paragraph>Vitae semper quis lectus nulla at volutpat diam ut. Faucibus in ornare quam viverra orci sagittis eu. Congue eu consequat ac felis donec et odio pellentesque. Suspendisse in est ante in nibh mauris cursus mattis molestie. In dictum non consectetur a erat nam at lectus urna. In vitae turpis massa sed. Nulla facilisi cras fermentum odio eu feugiat. Eu turpis egestas pretium aenean pharetra magna ac. In vitae turpis massa sed elementum tempus egestas sed sed. Sed euismod nisi porta lorem mollis. Elit ullamcorper dignissim cras tincidunt lobortis feugiat vivamus at. Maecenas pharetra convallis posuere morbi leo urna molestie. Vitae tortor condimentum lacinia quis. Ullamcorper malesuada proin libero nunc consequat interdum varius sit amet. Massa enim nec dui nunc mattis enim. Est pellentesque elit ullamcorper dignissim cras. Ut sem nulla pharetra diam sit amet nisl suscipit.</Paragraph>                
                 <Paragraph>Mi in nulla posuere sollicitudin aliquam. Semper eget duis at tellus at urna condimentum mattis pellentesque. Aliquam malesuada bibendum arcu vitae elementum curabitur vitae nunc sed. Gravida neque convallis a cras semper auctor. Ut morbi tincidunt augue interdum. Donec enim diam vulputate ut pharetra sit amet. Sed vulputate mi sit amet mauris commodo. Vel eros donec ac odio tempor orci dapibus ultrices. Nisi vitae suscipit tellus mauris a diam maecenas sed. Sed libero enim sed faucibus turpis. Pharetra pharetra massa massa ultricies mi. Amet nulla facilisi morbi tempus.</Paragraph>
@@ -22,6 +22,18 @@
                     <Title>Second Heading</Title>
                     <Content>
                         <Paragraph>And this after the second heading, which is on level 2.</Paragraph>
+                        <Paragraph>
+                            <List Type="Numerical">
+                                <Item>This is a numerical list of items!</Item>
+                                <Item>Each one counts up from the first item to indicate their order.</Item>
+                                <Item>
+                                    <List Type="Bulleted">
+                                        <Item>You can also nest lists if you like, to provide even more organization!</Item>
+                                        <Item>Lists are first-class items just like headings and other content blocks.</Item>
+                                    </List>
+                                </Item>
+                            </List>
+                        </Paragraph>
                     </Content>
                 </Heading>
             </Content>
