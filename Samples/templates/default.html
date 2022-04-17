@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="${styles.main}" rel="stylesheet"/>
+        <link href="assets/css/main.css" rel="stylesheet"/>
     </head>
-    <body>
-        <strong>This is a sample file!</strong>
-        ${Body}
+    <body>${let(result = 3 + 7*8)}${body.compile(this)}
     </body>
 </html>

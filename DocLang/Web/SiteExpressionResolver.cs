@@ -1,5 +1,8 @@
-﻿using BassClefStudio.DocLang.Xml;
+﻿using BassClefStudio.DocLang.Web.Sites;
+using BassClefStudio.DocLang.Xml;
 using BassClefStudio.Storage;
+using BassClefStudio.SymbolicLanguage.Parsers;
+using BassClefStudio.SymbolicLanguage.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,46 +10,89 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Pidgin;
+using static Pidgin.Parser;
+using static Pidgin.Parser<char>;
+using BassClefStudio.SymbolicLanguage.Data;
+using System.Text.RegularExpressions;
 
 namespace BassClefStudio.DocLang.Web
 {
     /// <summary>
     /// Provides a <see cref="WebSiteBuilder"/>-specific <see cref="IExpressionResolver"/> which can handle static site expressions and variables.
     /// </summary>
-    public class SiteExpressionResolver : IExpressionResolver
+    public class SiteExpressionResolver : IExpressionResolver, IRuntimeObject
     {
         #region Data
 
         /// <summary>
-        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed CSS stylesheet <see cref="IStorageFile"/>s.
+        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed CSS <see cref="StyleSheet"/> assets.
         /// </summary>
-        public IDictionary<string, IStorageFile> Styles { get; }
+        public IDictionary<string, StyleSheet> Styles { get; }
 
         /// <summary>
-        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed asset <see cref="IStorageFile"/>s.
+        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed generic <see cref="Asset"/>s.
         /// </summary>
-        public IDictionary<string, IStorageFile> Assets { get; }
+        public IDictionary<string, Asset> Assets { get; }
 
         /// <summary>
-        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed HTML template <see cref="IStorageFile"/>s.
+        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed <see cref="Template"/> assets.
         /// </summary>
-        public IDictionary<string, IStorageFile> Templates { get; }
+        public IDictionary<string, Template> Templates { get; }
 
         /// <summary>
-        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed DocLang document <see cref="IStorageFile"/>s.
+        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed DocLang <see cref="Page"/> assets.
         /// </summary>
-        public IDictionary<string, IStorageFile> Pages { get; }
+        public IDictionary<string, Page> Pages { get; }
         
         /// <summary>
-        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed <see cref="string"/> constants used for site generation.
+        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed generic <see cref="object"/> constants used for site generation.
         /// </summary>
-        public IDictionary<string, string> Constants { get; }
+        public IDictionary<string, object?> Fields { get; }
 
         /// <summary>
-        /// The current <see cref="IStorageFile"/> (usually from <see cref="Pages"/>) representing the current content being compiled.
+        /// The current <see cref="Page"/> (usually from <see cref="Pages"/>) representing the current data context of the <see cref="IExpressionResolver"/>.
         /// </summary>
-        public IStorageFile? Body { get; set; }
+        public Page? Body { get; set; }
 
+        #region Expressions
+
+        /// <summary>
+        /// The <see cref="IExpressionRuntime"/> used to evaluate <see cref="IExpression"/> compile-time expressions.
+        /// </summary>
+        public IExpressionRuntime Runtime { get; }
+
+        /// <summary>
+        /// A <see cref="Regex"/> expression which can detect and replace compile-time expressions with their <see cref="Runtime"/> evaluations.
+        /// </summary>
+        private Regex ExpressionMatch { get; }
+
+        /// <summary>
+        /// An <see cref="ExpressionParser"/> for turning <see cref="string"/> representations of compile-time expressions into their <see cref="IExpression"/> equivalents.
+        /// </summary>
+        private ExpressionParser Parser { get; }
+
+        /// <inheritdoc/>
+        public IDictionary<string, RuntimeMethod> Methods { get; }
+
+        /// <inheritdoc/>
+        public object? this[string key]
+        {
+            get
+            {
+                if (key == "body") return Body;
+                if (Fields.ContainsKey(key)) return Fields[key];
+                if (Methods.ContainsKey(key)) return Methods[key];
+                else throw new KeyNotFoundException($"Could not find \"{key}\" in the current context.");
+            }
+            set
+            {
+                if (value is RuntimeMethod method) Methods[key] = method;
+                else Fields[key] = value;
+            }
+        }
+
+        #endregion
         #endregion
         #region Initialize
 
@@ -55,18 +101,48 @@ namespace BassClefStudio.DocLang.Web
         /// </summary>
         public SiteExpressionResolver()
         {
-            Styles = new Dictionary<string, IStorageFile>();
-            Assets = new Dictionary<string, IStorageFile>();
-            Templates = new Dictionary<string, IStorageFile>();
-            Pages = new Dictionary<string, IStorageFile>();
-            Constants = new Dictionary<string, string>();
+            // Initialize data fields:
+            Styles = new Dictionary<string, StyleSheet>();
+            Assets = new Dictionary<string, Asset>();
+            Templates = new Dictionary<string, Template>();
+            Pages = new Dictionary<string, Page>();
+            Fields = new Dictionary<string, object?>();
+
+            // Initialize expressions root:
+            Methods = new Dictionary<string, RuntimeMethod>();
+            Runtime = new ExpressionRuntime();
+            ExpressionMatch = new Regex(@"\${([^{]*)}");
+            Parser = new ExpressionParser();
+            InitializeExpressions();
+        }
+
+        private void InitializeExpressions()
+        {
+            Fields.Add("styles", Styles);
+            Fields.Add("templates", Templates);
+            Fields.Add("pages", Pages);
+            Fields.Add("assets", Assets);
+            Fields.Add("this", this);
+
+            Methods.Add("let", ExpressionRuntime.Let(this));
         }
 
         #endregion
         #region Resolution
-        #region Parsing
+        #region Expressions
 
-        
+        private async Task<XElement?> CompileBody()
+        {
+            if(Body == null)
+            {
+                return null;
+            }
+            else if (!Body.Compiled)
+            {
+                await Body.CompileAsync(this);
+            }
+            return Body.Content;
+        }
 
         #endregion
 
@@ -90,40 +166,52 @@ namespace BassClefStudio.DocLang.Web
                 }
             }
 
-            if (content is XText text && text.Value.Contains("${Body}") && Body is not null)
+            if (content is XText text)
             {
-                content.ReplaceWith(await GetPageAsync(Body));
+                IEnumerable<object?> newContent = await ResolveAsync(text.Value);
+                text.ReplaceWith(newContent.Select(c => (c is string s) ? new XText(s) : c).ToArray());
             }
         }
 
         /// <inheritdoc/>
         public async Task ResolveAsync(XAttribute content)
-        { }
-
-        /// <summary>
-        /// Compiles the given DocLang <see cref="IStorageFile"/> file and returns the <see cref="XNode"/> contents.
-        /// </summary>
-        /// <param name="file">The <see cref="IStorageFile"/> containing the DocLang information being processed.</param>
-        /// <returns>The resulting <see cref="XNode"/> site content.</returns>
-        private async Task<XNode> GetPageAsync(IStorageFile file)
         {
-            using WebDocFormatter formatter = new WebDocFormatter();
-            await formatter.InitializeAsync();
-            using DocLangValidator validator = new DocLangValidator();
-            using (Stream tempStream = new MemoryStream())
+            content.SetValue(string.Concat(await ResolveAsync(content.Value)));
+        }
+
+        private async Task<IEnumerable<object?>> ResolveAsync(string content)
+        {
+            var matches = ExpressionMatch.Matches(content);
+            int[] matchStarts = matches.Select(m => m.Index).ToArray();
+            int[] matchLengths = matches.Select(m => m.Length).ToArray();
+            string[] matchExps = matches.Select(m => m.Groups[1].Value).ToArray();
+            int position = 0;
+            int index = 0;
+            List<object?> newContent = new List<object?>();
+            while (position < content.Length)
             {
-                using (IFileContent pageContent = await file.OpenFileAsync())
-                using (Stream pageStream = pageContent.GetReadStream())
+                if (index < matchStarts.Length)
                 {
-                    DocumentType docType = await validator.ValidateAsync(pageStream, new DocumentType(DocLangXml.ContentType));
-                    pageStream.Seek(0, SeekOrigin.Begin);
-                    await formatter.ConvertAsync(pageStream, tempStream);
-                    tempStream.Seek(0, SeekOrigin.Begin);
-                    XNode node = await XElement.LoadAsync(tempStream, LoadOptions.None, CancellationToken.None);
-                    await ResolveAsync(node);
-                    return node;
+                    if (position == matchStarts[index])
+                    {
+                        IExpression expData = Parser.BuildExpression(matchExps[index]);
+                        newContent.Add(await Runtime.ExecuteAsync(expData, this));
+                        position += matchLengths[index];
+                        index++;
+                    }
+                    else
+                    {
+                        newContent.Add(content.Substring(position, matchStarts[index] - position));
+                        position = matchStarts[index];
+                    }
+                }
+                else
+                {
+                    newContent.Add(content.Substring(position));
+                    position = content.Length;
                 }
             }
+            return newContent;
         }
 
         #endregion

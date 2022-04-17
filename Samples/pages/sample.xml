@@ -4,14 +4,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://bassclefstudio.dev/DocLang/v1/Base ../../DocLang/Xml/Base-v1.xsd"
     Name="Test Document"
-    Id="testDoc">
+    Id="testDoc"
+    Date="2022-04-17T00:00:00Z">
     <Title>My Test Document</Title>
     <Authors>
-        <Author Type="Creator">${MyName}</Author>
+        <Author Type="Creator">bassclefstudio</Author>
     </Authors>
     <Content>
         <Heading Name="Heading 1" Id="h1">
-            <Title>First Heading</Title>
+            <Title>First Heading (Result = ${result})</Title>
             <Content>
                 <Paragraph><Bold>Lorem ipsum dolor sit amet, consectetur adipiscing elit,</Bold> sed do eiusmod tempor incididunt <Italic>ut labore et dolore magna aliqua.</Italic> A diam maecenas sed enim ut sem. Integer quis auctor elit sed vulputate mi sit. Vitae justo eget magna fermentum. Malesuada pellentesque elit eget gravida cum. Nunc scelerisque viverra mauris in. Pretium aenean pharetra magna ac placerat vestibulum. Vel eros donec ac odio tempor orci dapibus. Enim nunc faucibus a pellentesque sit amet porttitor eget dolor. Pharetra sit amet aliquam id. Nibh sed pulvinar proin gravida hendrerit. Pellentesque eu tincidunt tortor aliquam nulla facilisi.</Paragraph>
                 <Paragraph>Lobortis scelerisque fermentum dui faucibus in ornare quam. Vitae auctor eu augue ut lectus arcu bibendum at. Egestas maecenas pharetra convallis posuere morbi leo urna. Ut sem viverra aliquet eget sit amet tellus cras adipiscing. At auctor urna nunc id cursus. Consectetur a erat nam at. Elit duis tristique sollicitudin nibh sit amet commodo nulla facilisi. Luctus venenatis lectus magna fringilla. Mattis pellentesque id nibh tortor id aliquet lectus proin. Interdum velit laoreet id donec. Quam adipiscing vitae proin sagittis nisl rhoncus mattis rhoncus urna. Mattis vulputate enim nulla aliquet porttitor. Facilisis sed odio morbi quis. Ut tristique et egestas quis ipsum suspendisse. Maecenas accumsan lacus vel facilisis. Eu ultrices vitae auctor eu augue. Et tortor consequat id porta nibh venenatis cras. Aliquam ultrices sagittis orci a scelerisque purus semper.</Paragraph>

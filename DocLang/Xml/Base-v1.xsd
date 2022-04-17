@@ -37,6 +37,11 @@
                 <xs:documentation>The name of the document which is shown externally.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="Date" type="xs:dateTime" use="required">
+            <xs:annotation>
+                <xs:documentation>The publication date and time for the given document.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="Content" mixed="true">

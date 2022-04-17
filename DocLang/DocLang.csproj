@@ -26,5 +26,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Base Libraries\StorageLib\StorageLib\StorageLib.csproj" />
+    <ProjectReference Include="..\..\SymbolicLanguage\SymbolicLanguage\SymbolicLanguage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pidgin" Version="3.1.0" />
   </ItemGroup>
 </Project>
