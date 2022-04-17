@@ -1,7 +1,7 @@
-﻿namespace BassClefStudio.DocLang.Sites
+﻿namespace BassClefStudio.DocLang
 {
     /// <summary>
-    /// An <see cref="Exception"/> thrown when an <see cref="ISiteBuilder.BuildSiteAsync(AppModel.Storage.IStorageFolder)"/> encounters an issue building the content structure of the generated site.
+    /// An <see cref="Exception"/> thrown when an <see cref="ISiteBuilder.BuildSiteAsync(Storage.IStorageFolder)"/> encounters an issue building the content structure of the generated site.
     /// </summary>
     [Serializable]
     public class SiteBuilderException : Exception

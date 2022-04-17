@@ -1,6 +1,6 @@
 ﻿using BassClefStudio.Storage;
 
-namespace BassClefStudio.DocLang.Sites
+namespace BassClefStudio.DocLang
 {
     /// <summary>
     /// Represents a service which can build multiple DocLang documents into some finished output.
