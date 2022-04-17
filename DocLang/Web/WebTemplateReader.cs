@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace BassClefStudio.DocLang.Web
@@ -53,21 +54,22 @@ namespace BassClefStudio.DocLang.Web
         #endregion
         #region Reading
 
+        private readonly Regex VarMatch = new Regex(@"@\{([^}]*)\}");
+
         /// <summary>
         /// Checks to see if a given <see cref="string"/> represents a variable access.
         /// </summary>
         /// <param name="content">The <see cref="string"/> being checked.</param>
         /// <returns>A <see cref="bool"/> that is true iff <paramref name="content"/> is non-null and begins (after trimming) with the '@' character.</returns>
         private bool IsVar([NotNullWhen(true)] string? content)
-            => string.IsNullOrEmpty(content) ? false : content.Trim().StartsWith("@");
+            => string.IsNullOrEmpty(content) ? false : VarMatch.Match(content).Success;
 
         /// <summary>
-        /// Gets the name of the variable represented by the given variable access <see cref="string"/> (see <see cref="IsVar(string?)"/>).
+        /// Given a Regex <see cref="Match"/> corresponding to the <see cref="VarMatch"/> check, returns the <see cref="string"/> variable name represented.
         /// </summary>
-        /// <param name="content">The <see cref="string"/> variable syntax.</param>
-        /// <returns>A <see cref="string"/> indicating the unescaped variable name.</returns>
-        private string GetVar(string content)
-            => content.Trim().Substring(1);
+        /// <param name="match">The produced Regex <see cref="Match"/>.</param>
+        /// <returns>A <see cref="string"/> variable name.</returns>
+        private string GetVar(Match match) => match.Groups[1].Value;
 
         /// <inheritdoc/>
         public override bool Read()
@@ -81,7 +83,7 @@ namespace BassClefStudio.DocLang.Web
             }
             else if (currentReader.NodeType == XmlNodeType.Text && IsVar(currentReader.Value))
             {
-                string varName = GetVar(currentReader.Value);
+                string varName = GetVar(VarMatch.Match(currentReader.Value));
                 if (!readingContent && varName == ContentVar)
                 {
                     readingContent = true;
@@ -141,15 +143,26 @@ namespace BassClefStudio.DocLang.Web
             {
                 if(IsVar(currentReader.Value))
                 {
-                    string key = GetVar(currentReader.Value);
-                    if (Variables.ContainsKey(key))
-                    {
-                        return Variables[key];
-                    }
-                    else
-                    {
-                        return string.Empty;
-                    }
+                    return VarMatch.Replace(currentReader.Value, 
+                        m =>
+                        {
+                            if (m.Success)
+                            {
+                                string key = GetVar(m);
+                                if (Variables.ContainsKey(key))
+                                {
+                                    return Variables[key];
+                                }
+                                else
+                                {
+                                    throw new SiteBuilderException($"Could not resolve compile-time constant \"{key}\".");
+                                }
+                            }
+                            else
+                            {
+                                return m.Value;
+                            }
+                        });
                 }
                 else
                 {

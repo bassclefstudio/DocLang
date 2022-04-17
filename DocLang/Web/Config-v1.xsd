@@ -1,0 +1,91 @@
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    elementFormDefault="qualified"
+    xmlns="http://bassclefstudio.dev/DocLang/v1/Config"
+    targetNamespace="http://bassclefstudio.dev/DocLang/v1/Config">
+    <xs:element name="Site" type="Site">
+        <xs:annotation>
+            <xs:documentation>The root of the configuration file, which contains information about all of the components and templating of the completed site.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="Site">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Template" type="Asset">
+                <xs:annotation>
+                    <xs:documentation>A HTML template file which contains boilerplate code and styling for generating DocLang webpages.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Style" type="Asset">
+                <xs:annotation>
+                    <xs:documentation>A CSS stylesheet which can be referenced as the style for Templates and Pages within the site.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Asset" type="Asset">
+                <xs:annotation>
+                    <xs:documentation>A generic asset which should be copied into the site's output folder.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Constant" type="Constant">
+                <xs:annotation>
+                    <xs:documentation>A compile-time constant value which can be referenced by any Template or Page in the site.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Page" type="Page">
+                <xs:annotation>
+                    <xs:documentation>A reference to a DocLang document which will be compiled into a page of the completed site.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="Asset">
+        <xs:simpleContent>
+            <xs:annotation>
+                <xs:documentation>The relative path in the source folder to the asset file.</xs:documentation>
+            </xs:annotation>
+            <xs:extension base="xs:anyURI">
+                <xs:attribute name="Key" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The unique string key of the asset, which is used to reference it within the site.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="Constant">
+        <xs:simpleContent>
+            <xs:annotation>
+                <xs:documentation>A string constant value which can be referenced by any page or template.</xs:documentation>
+            </xs:annotation>
+            <xs:extension base="xs:string">
+                <xs:attribute name="Name" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The unique string name of the constant, which is used to reference it within the Site.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="Page">
+        <xs:simpleContent>
+            <xs:annotation>
+                <xs:documentation>The relative path in the source folder to the DocLang document.</xs:documentation>
+            </xs:annotation>
+            <xs:extension base="xs:anyURI">
+                <xs:attribute name="Template" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The unique string key of the Template used to compile this document to HTML.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="Destination" type="xs:anyURI" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>The desired destination relative path within the completed website for this DocLang page.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+</xs:schema>
