@@ -1,5 +1,9 @@
-<Site>
-    <Template Key="Default">template.html</Template>
-    <Page Template="Default" Destination="index.html">Sample.xml</Page>
-    <Style Key="Main">style.css</Style>
+<Site 
+    xmlns="http://bassclefstudio.dev/DocLang/v1/Config" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://bassclefstudio.dev/DocLang/v1/Config ../DocLang/Web/Config-v1.xsd">
+    <Template Key="default">templates/default.html</Template>
+    <Page Template="default" Destination="index.html">pages/sample.xml</Page>
+    <Style Key="main">styles/main.css</Style>
+    <Constant Name="MyName">bassclefstudio</Constant>
 </Site>

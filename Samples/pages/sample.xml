@@ -2,12 +2,12 @@
 <Document 
     xmlns="http://bassclefstudio.dev/DocLang/v1/Base"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://bassclefstudio.dev/DocLang/v1/Base ../DocLang/Xml/Base-v1.xsd"
+    xsi:schemaLocation="http://bassclefstudio.dev/DocLang/v1/Base ../../DocLang/Xml/Base-v1.xsd"
     Name="Test Document"
     Id="testDoc">
     <Title>My Test Document</Title>
     <Authors>
-        <Author Type="Creator">bassclefstudio</Author>
+        <Author Type="Creator">@{MyName}</Author>
     </Authors>
     <Content>
         <Heading Name="Heading 1" Id="h1">
