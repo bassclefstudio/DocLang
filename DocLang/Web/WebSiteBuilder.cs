@@ -1,10 +1,9 @@
 ﻿using BassClefStudio.Storage;
-using BassClefStudio.DocLang.Web;
 using BassClefStudio.DocLang.Xml;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace BassClefStudio.DocLang.Sites
+namespace BassClefStudio.DocLang.Web
 {
     /// <summary>
     /// Represents the configuration and content of a static site generated using DocLang.
@@ -51,13 +50,7 @@ namespace BassClefStudio.DocLang.Sites
             IStorageFolder assetsFolder = await output.CreateFolderAsync("assets");
             IStorageFolder styleFolder = await assetsFolder.CreateFolderAsync("css");
 
-            using WebDocFormatter formatter = new WebDocFormatter();
-            await formatter.InitializeAsync();
-            using DocLangValidator validator = new DocLangValidator();
-
-            IDictionary<string, IStorageFile> styles = new Dictionary<string, IStorageFile>();
-            IDictionary<string, IStorageFile> assets = new Dictionary<string, IStorageFile>();
-            IDictionary<string, IStorageFile> templates = new Dictionary<string, IStorageFile>();
+            SiteExpressionResolver resolver = new SiteExpressionResolver();
 
             IStorageFile configFile = await source.GetFileAsync(ConfigFile);
             using (var fileStream = await configFile.OpenFileAsync(FileOpenMode.Read))
@@ -80,7 +73,7 @@ namespace BassClefStudio.DocLang.Sites
                         IStorageFile templateFile = await source.GetFileAsync(path);
                         string key = template.Attribute("Key")?.Value ?? templateFile.GetNameWithoutExtension();
                         this.LogSuccess("Loaded template {0}.", templateFile.GetRelativePath(source));
-                        templates[key] = templateFile;
+                        resolver.Templates[key] = templateFile;
                     }
                 }
 
@@ -96,8 +89,8 @@ namespace BassClefStudio.DocLang.Sites
                         IStorageFile stylesheet = await source.GetFileAsync(path);
                         string key = style.Attribute("Key")?.Value ?? stylesheet.GetNameWithoutExtension();
                         string fileName = $"{key}.css";
-                        styles[key] = await stylesheet.CopyToAsync(styleFolder, CollisionOptions.Overwrite, fileName);
-                        this.LogSuccess("Loaded stylesheet {0} -> {1}.", stylesheet.GetRelativePath(source), styles[key].GetRelativePath(source));
+                        resolver.Styles[key] = await stylesheet.CopyToAsync(styleFolder, CollisionOptions.Overwrite, fileName);
+                        this.LogSuccess("Loaded stylesheet {0} -> {1}.", stylesheet.GetRelativePath(source), resolver.Styles[key].GetRelativePath(source));
                     }
                 }
 
@@ -113,15 +106,9 @@ namespace BassClefStudio.DocLang.Sites
                         IStorageFile assetFile = await source.GetFileAsync(path);
                         string key = asset.Attribute("Key")?.Value ?? assetFile.GetNameWithoutExtension();
                         string fileName = $"{key}.{assetFile.FileType}";
-                        assets[key] = await assetFile.CopyToAsync(assetsFolder, CollisionOptions.Overwrite, fileName);
-                        this.LogSuccess("Loaded asset {0} -> {1}.", assetFile.GetRelativePath(source), assets[key].GetRelativePath(source));
+                        resolver.Assets[key] = await assetFile.CopyToAsync(assetsFolder, CollisionOptions.Overwrite, fileName);
+                        this.LogSuccess("Loaded asset {0} -> {1}.", assetFile.GetRelativePath(source), resolver.Assets[key].GetRelativePath(source));
                     }
-                }
-
-                IDictionary<string, string> varList = new Dictionary<string, string>();
-                foreach (var style in styles)
-                {
-                    varList.Add($"styles.{style.Key}", $"assets/css/{style.Key}.css");
                 }
 
                 foreach (var constant in config.Root.Elements(XName.Get("Constant", ConfigNamespace)))
@@ -140,25 +127,13 @@ namespace BassClefStudio.DocLang.Sites
                         }
                         else
                         {
-                            varList.Add(key, value);
+                            resolver.Constants.Add(key, value);
                             this.LogSuccess("let {0} = \"{1}\"", key, value);
                         }
                     }
                 }
 
-                XmlWriterSettings writeSettings = new XmlWriterSettings() 
-                { 
-                    Async = true, 
-                    OmitXmlDeclaration = true,
-                    Indent = false,
-                };
-
-                XmlReaderSettings readSettings = new XmlReaderSettings() 
-                {
-                    Async = true,
-                    DtdProcessing = DtdProcessing.Parse
-                };
-
+                IDictionary<string, string?> pageTemplates = new Dictionary<string, string?>();
                 foreach (var page in config.Root.Elements(XName.Get("Page", ConfigNamespace)))
                 {
                     var path = page.Value;
@@ -169,46 +144,39 @@ namespace BassClefStudio.DocLang.Sites
                     else
                     {
                         IStorageFile pageFile = await source.GetFileAsync(path);
-                        string? key = page.Attribute("Template")?.Value;
-                        if (string.IsNullOrEmpty(key))
-                        {
-                            this.LogWarning("Ignoring Page {0} without template.", page);
-                        }
-                        else
-                        {
-                            string location = page.Attribute("Destination")?.Value ?? $"{pageFile.GetNameWithoutExtension()}.html";
-                            IStorageFile destinationFile = await output.CreateFileAsync(location, CollisionOptions.Overwrite);
-
-                            using (Stream tempStream = new MemoryStream())
-                            {
-                                using (IFileContent pageContent = await pageFile.OpenFileAsync())
-                                using (Stream pageStream = pageContent.GetReadStream())
-                                {
-                                    DocumentType docType = await validator.ValidateAsync(pageStream, new DocumentType(DocLangXml.ContentType));
-                                    pageStream.Seek(0, SeekOrigin.Begin);
-                                    this.LogInformation("Detected {0} as {1}.", pageFile.GetRelativePath(source), docType);
-                                    await formatter.ConvertAsync(pageStream, tempStream);
-                                    tempStream.Seek(0, SeekOrigin.Begin);
-                                }
-
-                                using (IFileContent templateContent = await templates[key].OpenFileAsync())
-                                using (Stream templateStream = templateContent.GetReadStream())
-                                using (XmlReader templateReader = XmlReader.Create(templateStream, readSettings))
-                                using (XmlReader contentReader = XmlReader.Create(tempStream, readSettings))
-                                using (IFileContent destination = await destinationFile.OpenFileAsync(FileOpenMode.ReadWrite))
-                                using (Stream destinationStream = destination.GetWriteStream())
-                                using (XmlWriter destinationWriter = XmlWriter.Create(destinationStream, writeSettings))
-                                using (WebTemplateReader reader = new WebTemplateReader(templateReader, contentReader, varList))
-                                {
-                                    await destinationWriter.WriteNodeAsync(reader, true);
-                                    await destinationWriter.FlushAsync();
-                                    this.LogSuccess("Loaded page {0} -> {1}.", pageFile.GetRelativePath(source), destinationFile.GetRelativePath(source));
-                                }
-                            }
-                        }
+                        string key = page.Attribute("Destination")?.Value ?? pageFile.GetNameWithoutExtension();
+                        this.LogSuccess("Found page {0} at '{1}'.", key, pageFile.GetRelativePath(source));
+                        resolver.Pages[key] = pageFile;
+                        pageTemplates[key] = page.Attribute("Template")?.Value;
                     }
                 }
 
+                foreach (var page in resolver.Pages)
+                {
+                    string? templateName = pageTemplates[page.Key];
+                    if (string.IsNullOrEmpty(templateName))
+                    {
+                        this.LogWarning("Ignoring Page {0} without template.", page);
+                    }
+                    else
+                    {
+                        string location = $"{page.Key}.html";
+                        IStorageFile destinationFile = await output.CreateFileAsync(location, CollisionOptions.Overwrite);
+
+                        using (IFileContent templateContent = await resolver.Templates[templateName].OpenFileAsync())
+                        using (Stream templateStream = templateContent.GetReadStream())
+                        using (IFileContent destination = await destinationFile.OpenFileAsync(FileOpenMode.ReadWrite))
+                        using (Stream destinationStream = destination.GetWriteStream())
+                        {
+                            resolver.Body = page.Value;
+                            XElement template = await XElement.LoadAsync(templateStream, LoadOptions.None, CancellationToken.None);
+                            await resolver.ResolveAsync(template);
+                            await template.SaveAsync(destinationStream, SaveOptions.None, CancellationToken.None);
+                            await destinationStream.FlushAsync();
+                            this.LogSuccess("Compiled page {0} -> {1}.", page.Value.GetRelativePath(source), destinationFile.GetRelativePath(source));
+                        }
+                    }
+                }
                 return output;
             }
         }

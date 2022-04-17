@@ -7,7 +7,7 @@
     Id="testDoc">
     <Title>My Test Document</Title>
     <Authors>
-        <Author Type="Creator">@{MyName}</Author>
+        <Author Type="Creator">${MyName}</Author>
     </Authors>
     <Content>
         <Heading Name="Heading 1" Id="h1">
