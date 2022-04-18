@@ -2,6 +2,7 @@
 using BassClefStudio.DocLang.Xml;
 using System.Xml;
 using System.Xml.Linq;
+using BassClefStudio.DocLang.Web.Sites;
 
 namespace BassClefStudio.DocLang.Web
 {
@@ -49,8 +50,8 @@ namespace BassClefStudio.DocLang.Web
 
             IStorageFolder assetsFolder = await output.CreateFolderAsync("assets");
             IStorageFolder styleFolder = await assetsFolder.CreateFolderAsync("css");
-
-            SiteExpressionResolver resolver = new SiteExpressionResolver();
+            Site site = new Site();
+            SiteContentResolver resolver = new SiteContentResolver();
 
             IStorageFile configFile = await source.GetFileAsync(ConfigFile);
             using (var fileStream = await configFile.OpenFileAsync(FileOpenMode.Read))
@@ -73,7 +74,7 @@ namespace BassClefStudio.DocLang.Web
                         IStorageFile templateFile = await source.GetFileAsync(path);
                         string key = template.Attribute("Key")?.Value ?? templateFile.GetNameWithoutExtension();
                         this.LogSuccess("Loaded template {0}.", templateFile.GetRelativePath(source));
-                        resolver.Templates[key] = new Sites.Template(templateFile, key);
+                        site.Templates[key] = new Sites.Template(templateFile, key);
                     }
                 }
 
@@ -89,8 +90,8 @@ namespace BassClefStudio.DocLang.Web
                         IStorageFile stylesheet = await source.GetFileAsync(path);
                         string key = style.Attribute("Key")?.Value ?? stylesheet.GetNameWithoutExtension();
                         string fileName = $"{key}.css";
-                        resolver.Styles[key] = new Sites.StyleSheet(await stylesheet.CopyToAsync(styleFolder, CollisionOptions.Overwrite, fileName), key);
-                        this.LogSuccess("Loaded stylesheet {0} -> {1}.", stylesheet.GetRelativePath(source), resolver.Styles[key].AssetFile.GetRelativePath(source));
+                        site.Styles[key] = new Sites.StyleSheet(await stylesheet.CopyToAsync(styleFolder, CollisionOptions.Overwrite, fileName), key);
+                        this.LogSuccess("Loaded stylesheet {0} -> {1}.", stylesheet.GetRelativePath(source), site.Styles[key].AssetFile.GetRelativePath(source));
                     }
                 }
 
@@ -106,8 +107,8 @@ namespace BassClefStudio.DocLang.Web
                         IStorageFile assetFile = await source.GetFileAsync(path);
                         string key = asset.Attribute("Key")?.Value ?? assetFile.GetNameWithoutExtension();
                         string fileName = $"{key}.{assetFile.FileType}";
-                        resolver.Assets[key] = new Sites.Asset(await assetFile.CopyToAsync(assetsFolder, CollisionOptions.Overwrite, fileName), key);
-                        this.LogSuccess("Loaded asset {0} -> {1}.", assetFile.GetRelativePath(source), resolver.Assets[key].AssetFile.GetRelativePath(source));
+                        site.Assets[key] = new Sites.Asset(await assetFile.CopyToAsync(assetsFolder, CollisionOptions.Overwrite, fileName), key);
+                        this.LogSuccess("Loaded asset {0} -> {1}.", assetFile.GetRelativePath(source), site.Assets[key].AssetFile.GetRelativePath(source));
                     }
                 }
 
@@ -127,7 +128,7 @@ namespace BassClefStudio.DocLang.Web
                         }
                         else
                         {
-                            resolver.Fields.Add(key, value);
+                            site.Constants.Add(key, value);
                             this.LogSuccess("let {0} = \"{1}\"", key, value);
                         }
                     }
@@ -152,12 +153,12 @@ namespace BassClefStudio.DocLang.Web
                             IStorageFile pageFile = await source.GetFileAsync(path);
                             string key = page.Attribute("Destination")?.Value ?? pageFile.GetNameWithoutExtension();
                             this.LogSuccess("Found page {0} at '{1}'.", key, pageFile.GetRelativePath(source));
-                            resolver.Pages[key] = new Sites.Page(pageFile, key, resolver.Templates[templateName], (bool?)page.Attribute("Debug") ?? false);
+                            site.Pages[key] = new Sites.Page(pageFile, key, site.Templates[templateName], resolver, (bool?)page.Attribute("Debug") ?? false);
                         }
                     }
                 }
 
-                foreach (var page in resolver.Pages)
+                foreach (var page in site.Pages)
                 {
                     string location = $"{page.Key}.html";
                     IStorageFile destinationFile = await output.CreateFileAsync(location, CollisionOptions.Overwrite);
@@ -167,7 +168,7 @@ namespace BassClefStudio.DocLang.Web
                     using (IFileContent destination = await destinationFile.OpenFileAsync(FileOpenMode.ReadWrite))
                     using (Stream destinationStream = destination.GetWriteStream())
                     {
-                        resolver.Body = page.Value;
+                        site.Body = page.Value;
                         XElement template = await XElement.LoadAsync(templateStream, LoadOptions.None, CancellationToken.None);
                         await resolver.ResolveAsync(template);
                         await template.SaveAsync(destinationStream, SaveOptions.None, CancellationToken.None);
