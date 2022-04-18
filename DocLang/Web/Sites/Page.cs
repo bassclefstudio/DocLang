@@ -18,11 +18,13 @@ namespace BassClefStudio.DocLang.Web.Sites
     /// <param name="XmlFile">The <see cref="IStorageFile"/> reference to this <see cref="Page"/>'s DocLang XMl file.</param>
     /// <param name="Name">The friendly name of the <see cref="Page"/>.</param>
     /// <param name="Template">The <see cref="Sites.Template"/> template used to compile the DocLang XML.</param>
+    /// <param name="Resolver">A <see cref="IContentResolver"/> which is used specifically by this <see cref="Page"/> to resolve XML expressions.</param>
     /// <param name="IsDebug">A <see cref="bool"/> value indicating whether this <see cref="Page"/> should only be rendered and compiled in debug configurations.</param>
-    public record Page(IStorageFile XmlFile, string Name, Template Template, bool IsDebug = false) : Asset(XmlFile, Name), IRuntimeObject
+    public record Page(IStorageFile XmlFile, string Name, Template Template, IContentResolver Resolver, bool IsDebug = false) : Asset(XmlFile, Name), IRuntimeObject
     {
         #region Expressions
 
+        /// <inheritdoc/>
         public object? this[string key] 
         {
             get
@@ -40,31 +42,22 @@ namespace BassClefStudio.DocLang.Web.Sites
             set => throw new NotImplementedException(); 
         }
 
-        private async Task<XElement?> CompileBody(object?[] inputs)
+        private async Task<object?> CompileBody(RuntimeContext context, object?[] inputs)
         {
-            Guard.HasSizeEqualTo(inputs, 1, nameof(inputs));
-            object? resolver = inputs[0];
-            Guard.IsNotNull(resolver, nameof(inputs));
-            if (resolver is IExpressionResolver expResolver)
-            {
-                await CompileAsync(expResolver);
-                return Content;
-            }
-            else
-            {
-                throw new ArgumentException($"{nameof(inputs)}[0] must be of type IExpressionResolver.");
-            }
+            Guard.HasSizeEqualTo(inputs, 0, nameof(inputs));
+            await CompileAsync(context);
+            return null;
         }
 
         #endregion
 
         /// <summary>
-        /// If <see cref="Compiled"/> is true (see <see cref="CompileAsync(IExpressionResolver)"/>), provides the <see cref="XElement"/> content of the website-compiled version of the DocLang <see cref="Asset.AssetFile"/>.
+        /// If <see cref="Compiled"/> is true (see <see cref="CompileAsync(IContentResolver)"/>), provides the <see cref="XElement"/> content of the website-compiled version of the DocLang <see cref="Asset.AssetFile"/>.
         /// </summary>
         public XElement? Content { get; private set; }
 
         /// <summary>
-        /// A <see cref="bool"/> indicating whether <see cref="CompileAsync(IExpressionResolver)"/> was successfully run and a compiled output <see cref="XElement"/> is available at <see cref="Content"/>.
+        /// A <see cref="bool"/> indicating whether <see cref="CompileAsync(IContentResolver)"/> was successfully run and a compiled output <see cref="XElement"/> is available at <see cref="Content"/>.
         /// </summary>
         [MemberNotNullWhen(true, nameof(Content))]
         public bool Compiled => Content != null;
@@ -84,9 +77,9 @@ namespace BassClefStudio.DocLang.Web.Sites
         /// <summary>
         /// Compiles the given DocLang <see cref="Page"/> source file and sets <see cref="Content"/> appropriately.
         /// </summary>
-        /// <param name="resolver">An <see cref="IExpressionResolver"/> used to resolve any compile-time expressions that make up the <see cref="Page"/>'s content.</param>
+        /// <param name="context">A <see cref="RuntimeContext"/> used as the context for the <see cref="IExpressionRuntime"/> which evaluates compile-time expressions.</param>
         /// <returns>A <see cref="bool"/> indicating whether the operation succeeded.</returns>
-        public async Task CompileAsync(IExpressionResolver resolver)
+        public async Task CompileAsync(RuntimeContext context)
         {
             if (!Compiled)
             {
@@ -102,7 +95,7 @@ namespace BassClefStudio.DocLang.Web.Sites
                     DocumentType docType = await validator.ValidateAsync(pageStream, new DocumentType(DocLangXml.ContentType));
                     pageStream.Seek(0, SeekOrigin.Begin);
                     XElement content = await XElement.LoadAsync(pageStream, LoadOptions.None, CancellationToken.None);
-                    await resolver.ResolveAsync(content);
+                    await Resolver.ResolveAsync(content, context);
                     await content.SaveAsync(tempInStream, SaveOptions.None, CancellationToken.None);
 
                     tempInStream.Seek(0, SeekOrigin.Begin);
