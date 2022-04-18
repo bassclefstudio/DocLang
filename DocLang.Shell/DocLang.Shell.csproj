@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Base Libraries\StorageLib\StorageLib.Base\StorageLib.Base.csproj" />
-    <ProjectReference Include="..\..\..\Base Libraries\StorageLib\StorageLib\StorageLib.csproj" />
-    <ProjectReference Include="..\DocLang\DocLang.csproj" />
+    <ProjectReference Include="../../StorageLib/StorageLib/StorageLib.csproj" />
+    <ProjectReference Include="../../StorageLib/StorageLib.Base/StorageLib.Base.csproj" />
+    <ProjectReference Include="../DocLang/DocLang.csproj" />
   </ItemGroup>
 
 </Project>

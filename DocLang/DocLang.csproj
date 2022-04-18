@@ -25,8 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Base Libraries\StorageLib\StorageLib\StorageLib.csproj" />
-    <ProjectReference Include="..\..\SymbolicLanguage\SymbolicLanguage\SymbolicLanguage.csproj" />
+    <ProjectReference Include="../../StorageLib/StorageLib/StorageLib.csproj" />
+    <ProjectReference Include="../../BassScript/BassScript/BassScript.csproj" />
   </ItemGroup>
 
   <ItemGroup>

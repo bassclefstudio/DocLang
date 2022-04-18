@@ -2,8 +2,7 @@
   "profiles": {
     "DocLang.Shell": {
       "commandName": "Project",
-      "commandLineArgs": "site -i .",
-      "workingDirectory": "C:\\Users\\Public\\OneDrive\\Annabeth\\Development\\.NET\\Languages\\DocLang\\Samples"
+      "commandLineArgs": "site -i ../../../../Samples"
     }
   }
 }

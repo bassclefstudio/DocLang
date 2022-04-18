@@ -60,7 +60,7 @@ namespace BassClefStudio.DocLang.Web
         /// <summary>
         /// The <see cref="IExpressionRuntime"/> used to evaluate <see cref="IExpression"/> compile-time expressions.
         /// </summary>
-        public IExpressionRuntime Runtime { get; }
+        private IExpressionRuntime Runtime { get; }
 
         /// <summary>
         /// A <see cref="Regex"/> expression which can detect and replace compile-time expressions with their <see cref="Runtime"/> evaluations.
@@ -72,8 +72,10 @@ namespace BassClefStudio.DocLang.Web
         /// </summary>
         private ExpressionParser Parser { get; }
 
-        /// <inheritdoc/>
-        public IDictionary<string, RuntimeMethod> Methods { get; }
+        /// <summary>
+        /// An <see cref="IDictionary{TKey,TValue}"/> of the provided built-in <see cref="RuntimeMethod"/>s this <see cref="IRuntimeObject"/> provides.
+        /// </summary>
+        private IDictionary<string, RuntimeMethod> Methods { get; }
 
         /// <inheritdoc/>
         public object? this[string key]
@@ -125,6 +127,7 @@ namespace BassClefStudio.DocLang.Web
             Fields.Add("this", this);
 
             Methods.Add("let", ExpressionRuntime.Let(this));
+            Methods.Add("select", ExpressionRuntime.Select());
         }
 
         #endregion
