@@ -1,6 +1,6 @@
 ﻿using BassClefStudio.DocLang.Xml;
 using BassClefStudio.Storage;
-using BassClefStudio.SymbolicLanguage.Runtime;
+using BassClefStudio.BassScript.Runtime;
 using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -15,23 +15,23 @@ namespace BassClefStudio.DocLang.Web.Sites
     /// <summary>
     /// Represents a DocLang page compiled into a <see cref="WebSiteBuilder"/>'s site output.
     /// </summary>
-    /// <param name="XmlFile">The <see cref="IStorageFile"/> reference to this <see cref="Page"/>'s DocLang XMl file.</param>
+    /// <param name="AssetFile">The <see cref="IStorageFile"/> reference to this <see cref="Page"/>'s DocLang XMl file.</param>
     /// <param name="Name">The friendly name of the <see cref="Page"/>.</param>
     /// <param name="Template">The <see cref="Sites.Template"/> template used to compile the DocLang XML.</param>
     /// <param name="Resolver">A <see cref="IContentResolver"/> which is used specifically by this <see cref="Page"/> to resolve XML expressions.</param>
     /// <param name="IsDebug">A <see cref="bool"/> value indicating whether this <see cref="Page"/> should only be rendered and compiled in debug configurations.</param>
-    public record Page(IStorageFile XmlFile, string Name, Template Template, IContentResolver Resolver, bool IsDebug = false) : Asset(XmlFile, Name), IRuntimeObject
+    public record Page(IStorageFile AssetFile, string Name, Template Template, IContentResolver Resolver, bool IsDebug = false) : Asset(AssetFile, Name)
     {
         #region Expressions
 
         /// <inheritdoc/>
-        public object? this[string key] 
+        public override object? this[string key] 
         {
             get
             {
                 return key switch
                 {
-                    "compile" => new RuntimeMethod(async inputs => await CompileBody(inputs)),
+                    "compile" => CompileMethod,
                     "content" => this.Content,
                     "name" => this.Name,
                     "title" => this.Title,
@@ -42,22 +42,37 @@ namespace BassClefStudio.DocLang.Web.Sites
             set => throw new NotImplementedException(); 
         }
 
-        private async Task<object?> CompileBody(RuntimeContext context, object?[] inputs)
+        private RuntimeMethod? compileMethod = null;
+        /// <summary>
+        /// Gets the <see cref="RuntimeMethod"/> equivalent method for <see cref="CompileAsync(RuntimeContext)"/>.
+        /// </summary>
+        private RuntimeMethod CompileMethod
         {
-            Guard.HasSizeEqualTo(inputs, 0, nameof(inputs));
-            await CompileAsync(context);
-            return null;
+            get
+            {
+                if (compileMethod == null)
+                {
+                    compileMethod = async (context, inputs) =>
+                    {
+                        Guard.HasSizeEqualTo(inputs, 0, nameof(inputs));
+                        await CompileAsync(context);
+                        return this.Content;
+                    };
+                }
+
+                return compileMethod;
+            }
         }
 
         #endregion
 
         /// <summary>
-        /// If <see cref="Compiled"/> is true (see <see cref="CompileAsync(IContentResolver)"/>), provides the <see cref="XElement"/> content of the website-compiled version of the DocLang <see cref="Asset.AssetFile"/>.
+        /// If <see cref="Compiled"/> is true (see <see cref="CompileAsync(RuntimeContext)"/>), provides the <see cref="XElement"/> content of the website-compiled version of the DocLang <see cref="Asset.AssetFile"/>.
         /// </summary>
         public XElement? Content { get; private set; }
 
         /// <summary>
-        /// A <see cref="bool"/> indicating whether <see cref="CompileAsync(IContentResolver)"/> was successfully run and a compiled output <see cref="XElement"/> is available at <see cref="Content"/>.
+        /// A <see cref="bool"/> indicating whether <see cref="CompileAsync(RuntimeContext)"/> was successfully run and a compiled output <see cref="XElement"/> is available at <see cref="Content"/>.
         /// </summary>
         [MemberNotNullWhen(true, nameof(Content))]
         public bool Compiled => Content != null;

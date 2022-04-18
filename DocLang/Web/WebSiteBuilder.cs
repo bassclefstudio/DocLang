@@ -1,7 +1,7 @@
-﻿using BassClefStudio.Storage;
-using BassClefStudio.DocLang.Xml;
-using System.Xml;
+﻿using System.Collections;
+using BassClefStudio.Storage;
 using System.Xml.Linq;
+using BassClefStudio.BassScript.Runtime;
 using BassClefStudio.DocLang.Web.Sites;
 
 namespace BassClefStudio.DocLang.Web
@@ -52,7 +52,11 @@ namespace BassClefStudio.DocLang.Web
             IStorageFolder styleFolder = await assetsFolder.CreateFolderAsync("css");
             Site site = new Site();
             SiteContentResolver resolver = new SiteContentResolver();
-
+            
+            // Create the context and the core methods for evaluating expressions.
+            RuntimeContext context = new RuntimeContext();
+            InitializeContext(context, site);
+            
             IStorageFile configFile = await source.GetFileAsync(ConfigFile);
             using (var fileStream = await configFile.OpenFileAsync(FileOpenMode.Read))
             {
@@ -153,7 +157,12 @@ namespace BassClefStudio.DocLang.Web
                             IStorageFile pageFile = await source.GetFileAsync(path);
                             string key = page.Attribute("Destination")?.Value ?? pageFile.GetNameWithoutExtension();
                             this.LogSuccess("Found page {0} at '{1}'.", key, pageFile.GetRelativePath(source));
-                            site.Pages[key] = new Sites.Page(pageFile, key, site.Templates[templateName], resolver, (bool?)page.Attribute("Debug") ?? false);
+                            site.Pages[key] = new Sites.Page(
+                                pageFile,
+                                key,
+                                site.Templates[templateName],
+                                resolver,
+                                (bool?) page.Attribute("Debug") ?? false);
                         }
                     }
                 }
@@ -168,17 +177,79 @@ namespace BassClefStudio.DocLang.Web
                     using (IFileContent destination = await destinationFile.OpenFileAsync(FileOpenMode.ReadWrite))
                     using (Stream destinationStream = destination.GetWriteStream())
                     {
-                        site.Body = page.Value;
+                        RuntimeContext buildContext = context.SetSelf(
+                            page.Value.Template,
+                            new KeyValuePair<string, object?>("body", page.Value),
+                            new KeyValuePair<string, object?>("destination", output));
+                        
                         XElement template = await XElement.LoadAsync(templateStream, LoadOptions.None, CancellationToken.None);
-                        await resolver.ResolveAsync(template);
+                        await resolver.ResolveAsync(template, buildContext);
                         await template.SaveAsync(destinationStream, SaveOptions.None, CancellationToken.None);
                         await destinationStream.FlushAsync();
-                        this.LogSuccess("Compiled page {0} -> {1}.", page.Value.AssetFile.GetRelativePath(source), destinationFile.GetRelativePath(source));
+                        this.LogSuccess(
+                            "Compiled page {0} -> {1}.",
+                            page.Value.AssetFile.GetRelativePath(source),
+                            destinationFile.GetRelativePath(source));
                     }
                 }
             }
             return output;
         }
+
+        private void InitializeContext(RuntimeContext context, Site site)
+        {
+            context.Core.Add("site", site);
+            context.Core.Add("null", null);
+            
+            context.Core.Add(
+                "relative",
+                ExpressionRuntime.MakeMethod<IStorageItem, IStorageItem>(
+                    async (myContext, f1, f2) => f1.GetRelativePath(f2)));
+            context.Core.Add(
+                "select",
+                ExpressionRuntime.MakeMethod<IEnumerable, RuntimeMethod>(
+                    async (myContext, items, selector)
+                        => await Task.WhenAll(GetCollection(items).Select(i => selector(myContext, new[] {i})))));
+            context.Core.Add(
+                "filter",
+                ExpressionRuntime.MakeMethod<IEnumerable, RuntimeMethod>(
+                    async (myContext, items, selector) =>
+                    {
+                        var itemArray = GetCollection(items);
+                        return (await Task.WhenAll(itemArray.Select(i => selector(myContext, new[] {i}))))
+                            .Zip(itemArray)
+                            .Where(i => i.First is bool b && b)
+                            .Select(i => i.Second);
+                    }));
+            context.Core.Add(
+                "orderBy",
+                ExpressionRuntime.MakeMethod<IEnumerable, RuntimeMethod>(
+                    async (myContext, items, selector) =>
+                    {
+                        var itemArray = GetCollection(items);
+                        return (await Task.WhenAll(itemArray.Select(i => selector(myContext, new[] {i}))))
+                            .Zip(itemArray)
+                            .OrderBy(i => i.First)
+                            .Select(i => i.Second);
+                    }));
+            context.Core.Add(
+                "reverse",
+                ExpressionRuntime.MakeMethod<IEnumerable>(
+                    async (myContext, items) => items.Cast<object?>().Reverse()));
+            context.Core.Add(
+                "get",
+                ExpressionRuntime.MakeMethod<IDictionary, string>(
+                    async (myContext, items, key) => items[key]));
+            context.Core.Add(
+                "if",
+                ExpressionRuntime.MakeMethod<bool, RuntimeMethod, RuntimeMethod>(
+                    async (myContext, cond, tRun, fRun) 
+                        => cond ? await tRun(myContext) : await fRun(myContext)));
+        }
+
+        private object?[] GetCollection(IEnumerable items)
+            => (items is IDictionary dict ? dict.Values.Cast<object?>() : items.Cast<object?>()).ToArray();
+
         private void LogInformation(string format, params object?[] args)
         {
             ConsoleColor returnColor = Console.ForegroundColor;

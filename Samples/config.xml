@@ -4,6 +4,7 @@
     xsi:schemaLocation="http://bassclefstudio.dev/DocLang/v1/Config ../DocLang/Web/Config-v1.xsd">
     <Template Key="default">templates/default.html</Template>
     <Page Template="default" Destination="sample">pages/sample.xml</Page>
+    <Page Template="default" Destination="extra">pages/extra.xml</Page>
     <Style Key="main">styles/main.css</Style>
     <Constant Name="MyName">bassclefstudio</Constant>
 </Site>

@@ -1,9 +1,10 @@
 ﻿using BassClefStudio.DocLang.Web.Sites;
 using BassClefStudio.DocLang.Xml;
 using BassClefStudio.Storage;
-using BassClefStudio.SymbolicLanguage.Parsers;
-using BassClefStudio.SymbolicLanguage.Runtime;
+using BassClefStudio.BassScript.Parsers;
+using BassClefStudio.BassScript.Runtime;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ using System.Xml.Linq;
 using Pidgin;
 using static Pidgin.Parser;
 using static Pidgin.Parser<char>;
-using BassClefStudio.SymbolicLanguage.Data;
+using BassClefStudio.BassScript.Data;
 using System.Text.RegularExpressions;
 
 namespace BassClefStudio.DocLang.Web
@@ -108,7 +109,16 @@ namespace BassClefStudio.DocLang.Web
                     if (position == matchStarts[index])
                     {
                         IExpression expData = Parser.BuildExpression(matchExps[index]);
-                        newContent.Add(await Runtime.ExecuteAsync(expData, context));
+                        var result = await Runtime.ExecuteAsync(expData, context);
+                        if (result is IEnumerable results)
+                        {
+                            newContent.AddRange(results.Cast<object?>());
+                        }
+                        else
+                        {
+                            newContent.Add(result);
+                        }
+
                         position += matchLengths[index];
                         index++;
                     }

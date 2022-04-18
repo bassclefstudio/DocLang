@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="assets/css/main.css" rel="stylesheet"/>
+        <link href="${relative(get(site.styles, 'main').file, destination)}" rel="stylesheet"/>
     </head>
-    <body>${let(result = 3 + 7*8)}${body.compile(this)}
+    <body>
+        ${if(body.name == 'sample', i => body.compile(), i => null)}
     </body>
 </html>
