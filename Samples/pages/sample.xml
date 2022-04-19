@@ -8,7 +8,7 @@
     Date="2022-04-17T00:00:00Z">
     <Title>My Test Document</Title>
     <Authors>
-        <Author Type="Creator">bassclefstudio</Author>
+        <Author Type="Creator">${site.constants.MyName}</Author>
     </Authors>
     <Content>
         <Heading Name="Heading 1" Id="h1">

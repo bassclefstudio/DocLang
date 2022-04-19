@@ -4,6 +4,6 @@
         <link href="${relative(get(site.styles, 'main').file, destination)}" rel="stylesheet"/>
     </head>
     <body>
-        ${if(body.name == 'sample', i => body.compile(), i => null)}
+        ${body.compile()}
     </body>
 </html>

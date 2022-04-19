@@ -28,9 +28,9 @@ namespace BassClefStudio.DocLang.Web.Sites
         public IDictionary<string, Template> Templates { get; }
 
         /// <summary>
-        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed DocLang <see cref="Page"/> assets.
+        /// An <see cref="IDictionary{TKey, TValue}"/> of keyed DocLang <see cref="Template"/> assets.
         /// </summary>
-        public IDictionary<string, Page> Pages { get; }
+        public IDictionary<string, Template> Pages { get; }
 
         /// <summary>
         /// An <see cref="IDictionary{TKey, TValue}"/> of keyed generic <see cref="object"/> constants used for site generation.
@@ -61,7 +61,7 @@ namespace BassClefStudio.DocLang.Web.Sites
             Styles = new Dictionary<string, StyleSheet>();
             Assets = new Dictionary<string, Asset>();
             Templates = new Dictionary<string, Template>();
-            Pages = new Dictionary<string, Page>();
+            Pages = new Dictionary<string, Template>();
             Constants = new Dictionary<string, object?>();
         }
     }
