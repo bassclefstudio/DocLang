@@ -3,46 +3,86 @@ using BassClefStudio.DocLang.Web;
 using BassClefStudio.DocLang.Xml;
 using System.CommandLine;
 using System.Net.Mime;
+using BassClefStudio.DocLang.Base;
 using BassClefStudio.Storage.Base;
 
 namespace BassClefStudio.DocLang.Shell
 {
     static class Program
     {
-        public static readonly Dictionary<ShellContentType, DocumentType> SupportedTypes = new Dictionary<ShellContentType, DocumentType>()
+        [STAThread]
+        public static async Task Main(string[] args)
         {
-            { ShellContentType.DocLang, new DocumentType(DocLangXml.ContentType) },
-            { ShellContentType.Web, new DocumentType(MediaTypeNames.Text.Html) },
-        };
+            var formatOption = new Option<string>(
+                    new string[] { "-f", "--format" },
+                    () => BaseFormats.Types.Keys.First(),
+                    "The format specification of input and output content.");
+            formatOption.AddCompletions(BaseFormats.Types.Keys.ToArray());
+            
+            var builderOption = new Option<string>(
+                new string[] { "-b", "--builder" },
+                () => BaseFormats.SiteBuilders.Keys.First(),
+                "The type of site builder to use.");
+            builderOption.AddCompletions(BaseFormats.SiteBuilders.Keys.ToArray());
+            
+            var inputPathOption = new Option<DirectoryInfo>(
+                new string[] { "-i", "--input" },
+                () => new DirectoryInfo(Environment.CurrentDirectory),
+                "The folder containing the source files for site generation.").ExistingOnly();
+            
+            Command makeCommand = new Command("make", "Attempts to convert DocLang content between two different content types.")
+            {
+                formatOption
+            };
 
-        public static readonly IEnumerable<IDocValidator> Validators = new IDocValidator[]
-        {
-            new DocLangValidator()
-        };
+            makeCommand.SetHandler<string>(
+                MakeAsync,
+                formatOption);
 
-        public static readonly IEnumerable<IDocFormatter> Formatters = new IDocFormatter[]
-        {
-            new WebDocFormatter()
-        };
+            Command checkCommand = new Command("check", "Validates the DocLang content against the provided content type and schema.")
+            {
+                formatOption
+            };
 
-        public static readonly IEnumerable<ISiteBuilder> Builders = new ISiteBuilder[]
-        {
-            new WebSiteBuilder()
-        };
+            checkCommand.SetHandler<string>(
+                CheckAsync,
+                formatOption);
 
+            Command siteCommand = new Command("site", "Attempts generate a DocLang site from a group of content files and their associated configuration.")
+            {
+                inputPathOption,
+                builderOption
+            };
+
+            siteCommand.SetHandler<DirectoryInfo, string>(
+                SiteAsync,
+                inputPathOption,
+                builderOption);
+
+            RootCommand root = new RootCommand("A unifed, XML-based semantic document markup language.")
+            {
+                makeCommand,
+                checkCommand,
+                siteCommand
+            };
+
+            await root.InvokeAsync(args);
+        }
+        
         /// <summary>
         /// Attempts to convert DocLang content between two different content types.
         /// </summary>
-        public static async Task MakeAsync(ShellContentType inContent, ShellContentType outContent)
+        public static async Task MakeAsync(string format)
         {
             using (Stream inputStream = Console.OpenStandardInput())
             using (Stream outputStream = Console.OpenStandardOutput())
+            using (var formats = BaseFormats.GetFormats())
             {
-                var inputDocType = SupportedTypes[inContent];
-                var outputDocType = SupportedTypes[outContent];
+                var inputDocType = BaseFormats.Types[format];
+                var outputDocType = BaseFormats.Types[format];
 
-                var formatter = Formatters.FirstOrDefault(f => f.InputType.Is(inputDocType) && f.OutputType.Is(outputDocType));
-                if (formatter is null)
+                var formatter = formats[format].Formatter;
+                if (formatter.InputType.Is(inputDocType) && formatter.OutputType.Is(outputDocType))
                 {
                     throw new InvalidOperationException($"Could not find a document formatter for converting between {inputDocType} and {outputDocType}.");
                 }
@@ -54,13 +94,14 @@ namespace BassClefStudio.DocLang.Shell
         /// <summary>
         /// Checks the given document against the provided DocLang IDocValidator for the specified schema.
         /// </summary>
-        public static async Task CheckAsync(ShellContentType contentType)
+        public static async Task CheckAsync(string format)
         {
             using (Stream inputStream = Console.OpenStandardInput())
+            using (var formats = BaseFormats.GetFormats())
             {
-                var inputDocType = SupportedTypes[contentType];
-                var validator = Validators.FirstOrDefault(v => v.DocType.Is(inputDocType));
-                if (validator is null)
+                var inputDocType = BaseFormats.Types[format];
+                var validator = formats[format].Validator;
+                if (validator.DocType.Is(inputDocType))
                 {
                     throw new InvalidOperationException($"Could not find a schema validator for the provided content type {inputDocType}.");
                 }
@@ -70,10 +111,10 @@ namespace BassClefStudio.DocLang.Shell
             }
         }
 
-        public static async Task SiteAsync(DirectoryInfo folder)
+        public static async Task SiteAsync(DirectoryInfo folder, string builderType)
         {
             IStorageFolder sourceFolder = folder.AsFolder();
-            var builder = Builders.FirstOrDefault();
+            var builder = BaseFormats.SiteBuilders[builderType];
             if (builder is null)
             {
                 throw new InvalidOperationException($"Could not find a site builder for the provided content type.");
@@ -82,84 +123,5 @@ namespace BassClefStudio.DocLang.Shell
             IStorageFolder outputFolder = await builder.BuildSiteAsync(sourceFolder);
             Console.WriteLine($"Content successfully saved to '{outputFolder.GetRelativePath(sourceFolder)}'");
         }
-
-        [STAThread]
-        public static async Task Main(string[] args)
-        {
-            var inputOption = new Option<ShellContentType>(
-                new string[] { "-i", "--input" },
-                () => ShellContentType.DocLang,
-                "The content type of input data.");
-
-            var outputOption = new Option<ShellContentType>(
-                    new string[] { "-o", "--output" },
-                    () => ShellContentType.DocLang,
-                    "The content type of output data.");
-
-            var inputPathOption = new Option<DirectoryInfo>(
-                new string[] { "-i", "--input" },
-                () => new DirectoryInfo(Environment.CurrentDirectory),
-                "The folder containing the source files for site generation.").ExistingOnly();
-
-            var configOption = new Option<FileInfo>(
-                new string[] { "-c", "--config" },
-                () => new FileInfo(WebSiteBuilder.ConfigFile), // TODO: Make sure that the config file can be changed based on site type!
-                "The relative path to the config file describing how to generate the site output.").ExistingOnly();
-
-            Command makeCommand = new Command("make", "Attempts to convert DocLang content between two different content types.")
-            { 
-                inputOption,
-                outputOption
-            };
-
-            makeCommand.SetHandler<ShellContentType, ShellContentType>(
-                MakeAsync,
-                inputOption,
-                outputOption);
-
-            Command checkCommand = new Command("check", "Validates the DocLang content against the provided content type and schema.")
-            {
-                inputOption
-            };
-
-            checkCommand.SetHandler<ShellContentType>(
-                CheckAsync,
-                inputOption);
-
-            Command siteCommand = new Command("site", "Attempts generate a DocLang site from a group of content files and their associated configuration.")
-            {
-                inputPathOption,
-                configOption
-            };
-
-            siteCommand.SetHandler<DirectoryInfo>(
-                SiteAsync,
-                inputPathOption);
-
-            RootCommand root = new RootCommand("A unifed, XML-based semantic document markup language.")
-            {
-                makeCommand,
-                checkCommand,
-                siteCommand
-            };
-
-            await root.InvokeAsync(args);
-        }
-    }
-
-    /// <summary>
-    /// Associates "friendly name" values to common document and file types.
-    /// </summary>
-    public enum ShellContentType
-    {
-        /// <summary>
-        /// The DocLang XML format (any version).
-        /// </summary>
-        DocLang = 0,
-
-        /// <summary>
-        /// Web content (i.e. HTML).
-        /// </summary>
-        Web = 1
     }
 }

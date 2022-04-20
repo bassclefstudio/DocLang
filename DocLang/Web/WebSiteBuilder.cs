@@ -2,8 +2,8 @@
 using BassClefStudio.Storage;
 using System.Xml.Linq;
 using BassClefStudio.BassScript.Runtime;
+using BassClefStudio.DocLang.Base;
 using BassClefStudio.DocLang.Web.Sites;
-using BassClefStudio.DocLang.Xml;
 
 namespace BassClefStudio.DocLang.Web
 {
@@ -55,11 +55,10 @@ namespace BassClefStudio.DocLang.Web
                 context,
                 site);
             IStorageFile configFile = await source.GetFileAsync(ConfigFile);
-            using (var validator = new DocLangValidator())
-            using (var formatter = new WebDocFormatter())
-            using (var fileStream = await configFile.OpenFileAsync(FileOpenMode.Read))
+            using (var formats = BaseFormats.GetFormats())
+            using (var fileStream = await configFile.OpenFileAsync())
             {
-                await formatter.InitializeAsync();
+                await formats.InitializeAsync();
                 XDocument config = XDocument.Load(fileStream.GetReadStream());
                 if (config.Root is null)
                 {
@@ -80,7 +79,7 @@ namespace BassClefStudio.DocLang.Web
                         IStorageFile stylesheet = await source.GetFileAsync(path);
                         string key = style.Attribute("Key")?.Value ?? stylesheet.GetNameWithoutExtension();
                         string fileName = $"{key}.css";
-                        site.Styles[key] = new Sites.StyleSheet(
+                        site.Styles[key] = new StyleSheet(
                             await stylesheet.CopyToAsync(styleFolder, CollisionOptions.Overwrite, fileName),
                             key);
                         this.LogSuccess(
@@ -102,7 +101,7 @@ namespace BassClefStudio.DocLang.Web
                         IStorageFile assetFile = await source.GetFileAsync(path);
                         string key = asset.Attribute("Key")?.Value ?? assetFile.GetNameWithoutExtension();
                         string fileName = $"{key}.{assetFile.FileType}";
-                        site.Assets[key] = new Sites.Asset(
+                        site.Assets[key] = new Asset(
                             await assetFile.CopyToAsync(assetsFolder, CollisionOptions.Overwrite, fileName),
                             key);
                         this.LogSuccess(
@@ -134,69 +133,60 @@ namespace BassClefStudio.DocLang.Web
                     }
                 }
 
-                foreach (var template in config.Root.Elements(XName.Get("Template", ConfigNamespace)))
-                {
-                    var path = template.Value;
-                    if (string.IsNullOrEmpty(path))
-                    {
-                        this.LogWarning("Ignoring Template {0} without path.", template);
-                    }
-                    else
-                    {
-                        IStorageFile templateFile = await source.GetFileAsync(path);
-                        string key = template.Attribute("Key")?.Value ?? templateFile.GetNameWithoutExtension();
-                        this.LogSuccess("Loaded template {0}.", templateFile.GetRelativePath(source));
-                        site.Templates[key] = new Template(templateFile, key, resolver);
-                    }
-                }
-
-                foreach (var doc in config.Root.Elements(XName.Get("Document", ConfigNamespace)))
+                foreach (var doc in config.Root.Elements(XName.Get("Template", ConfigNamespace)))
                 {
                     var path = doc.Value;
                     if (string.IsNullOrEmpty(path))
                     {
-                        this.LogWarning("Ignoring Document {0} without path.", doc);
+                        this.LogWarning("Ignoring template {0} without path.", doc);
                     }
                     else
                     {
-                        IStorageFile pageFile = await source.GetFileAsync(path);
-                        string key = doc.Attribute("Key")?.Value ?? pageFile.GetNameWithoutExtension();
-                        this.LogSuccess("Found document {0} at '{1}'.", key, pageFile.GetRelativePath(source));
-                        site.Templates[key] = new DocTemplate(
-                            pageFile,
-                            key,
-                            resolver,
-                            validator,
-                            formatter);
+                        string? formatKey = doc.Attribute("Format")?.Value;
+                        if (string.IsNullOrEmpty(formatKey))
+                        {
+                            this.LogWarning("Ignoring template {0} without format.", doc);
+                        }
+                        else
+                        {
+                            var format = formats[formatKey];
+                            IStorageFile pageFile = await source.GetFileAsync(path);
+                            string key = doc.Attribute("Key")?.Value ?? pageFile.GetNameWithoutExtension();
+                            this.LogInformation("Found template '{0}' at '{1}'.", key, pageFile.GetRelativePath(source));
+                            site.Templates[key] = new DocTemplate(
+                                pageFile,
+                                key,
+                                resolver,
+                                format.Validator,
+                                format.Formatter);
+                        }
                     }
                 }
 
-                foreach (var page in config.Root.Elements(XName.Get("Page", ConfigNamespace)))
+                foreach (var page in config.Root.Elements(XName.Get("Output", ConfigNamespace)))
                 {
                     var path = page.Value;
                     if (string.IsNullOrEmpty(path))
                     {
-                        this.LogWarning("Ignoring Page {0} without path.", page);
+                        this.LogWarning("Ignoring page {0} without path.", page);
                     }
                     else
                     {
-                        string? templateName = page.Attribute("Template")?.Value;
+                        string? templateName = page.Attribute("Key")?.Value;
                         if (string.IsNullOrEmpty(templateName))
                         {
-                            this.LogWarning("Ignoring Page {0} without template.", page);
+                            this.LogWarning("Ignoring page {0} without root.", page);
                         }
                         else
                         {
-                            string? key = page.Attribute("Key")?.Value;
-                            Template? body = string.IsNullOrEmpty(key) ? null : site.Templates[key];
-                            Template template = site.Templates[templateName];
-
-                            string location = $"{path}.html";
+                            var key = page.Attribute("Body")?.Value;
+                            var body = string.IsNullOrEmpty(key) ? null : site.Templates[key];
+                            var template = site.Templates[templateName];
+                            this.LogInformation("Compiling '{0}' (body: {1})...", templateName, key);
+                            
                             IStorageFile destinationFile = await output.CreateFileAsync(
-                                location,
+                                path,
                                 CollisionOptions.Overwrite);
-                            using (IFileContent templateContent = await template.AssetFile.OpenFileAsync())
-                            using (Stream templateStream = templateContent.GetReadStream())
                             using (IFileContent destination =
                                    await destinationFile.OpenFileAsync(FileOpenMode.ReadWrite))
                             using (Stream destinationStream = destination.GetWriteStream())

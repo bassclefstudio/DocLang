@@ -10,7 +10,7 @@ namespace BassClefStudio.DocLang
         /// <summary>
         /// If applicable to the document, the <see cref="Version"/> schema version of the content type which this document implements.
         /// </summary>
-        public Version? SchemaVersion { get; set; }
+        public Version? SchemaVersion { get; }
 
         /// <summary>
         /// The MIME type of the content contained in this document.
@@ -47,6 +47,26 @@ namespace BassClefStudio.DocLang
         public bool Is(DocumentType other)
         {
             return other.ContentType.Equals(ContentType) && (other.SchemaVersion is null || other.SchemaVersion == SchemaVersion);
+        }
+
+        /// <summary>
+        /// Creates an unversioned <see cref="DocumentType"/> from this <see cref="ContentType"/> value.
+        /// </summary>
+        /// <param name="type">The <see cref="ContentType"/> type of the content.</param>
+        /// <returns>A <see cref="DocumentType"/> equivalent to <paramref name="type"/>[any].</returns>
+        public static implicit operator DocumentType(ContentType type)
+        {
+            return new DocumentType(type);
+        }
+        
+        /// <summary>
+        /// Creates an unversioned <see cref="DocumentType"/> from a <see cref="string"/> mime-type.
+        /// </summary>
+        /// <param name="type">The <see cref="string"/> mime-type of the content.</param>
+        /// <returns>A <see cref="DocumentType"/> equivalent to <paramref name="type"/>[any].</returns>
+        public static implicit operator DocumentType(string type)
+        {
+            return new DocumentType(type);
         }
 
         /// <inheritdoc/>

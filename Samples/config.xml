@@ -2,13 +2,11 @@
     xmlns="http://bassclefstudio.dev/DocLang/v1/Config" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xsi:schemaLocation="http://bassclefstudio.dev/DocLang/v1/Config ../DocLang/Web/Config-v1.xsd">
-    <Template Key="default">templates/default.html</Template>
-    <Document Key="sample">pages/sample.xml</Document>
-    <Document Key="extra">pages/extra.xml</Document>
+    <Template Key="default" Format="web">templates/default.html</Template>
+    <Template Key="sample" Format="doclang-base">pages/sample.xml</Template>
 
     <Style Key="main">styles/main.css</Style>
     <Constant Name="MyName">bassclefstudio</Constant>
 
-    <Page Template="default" Key="sample">sample</Page>
-    <Page Template="default" Key="extra">extra</Page>
+    <Output Key="default" Body="sample">sample.html</Output>
 </Site>
