@@ -218,7 +218,7 @@ namespace BassClefStudio.DocLang.Web
             context.Core.Add(
                 "relative",
                 ExpressionRuntime.MakeMethod<IStorageItem, IStorageItem>(
-                    async (myContext, f1, f2) => f1.GetRelativePath(f2)));
+                    async (_, f1, f2) => f1.GetRelativePath(f2)));
             context.Core.Add(
                 "select",
                 ExpressionRuntime.MakeMethod<IEnumerable, RuntimeMethod>(
@@ -227,33 +227,49 @@ namespace BassClefStudio.DocLang.Web
             context.Core.Add(
                 "filter",
                 ExpressionRuntime.MakeMethod<IEnumerable, RuntimeMethod>(
-                    async (myContext, items, selector) =>
+                    async (myContext, items, selector)
+                        =>
                     {
-                        var itemArray = GetCollection(items);
-                        return (await Task.WhenAll(itemArray.Select(i => selector(myContext, new[] {i}))))
-                            .Zip(itemArray)
-                            .Where(i => i.First is bool b && b)
-                            .Select(i => i.Second);
+                        var itemArray = GetCollection(items).ToArray();
+                        var keys = await Task.WhenAll(itemArray.Select(i => selector(myContext, new[] {i})));
+                        return itemArray.Zip(keys).Where(i => i.Second is bool b && b).Select(i => i.First);
                     }));
             context.Core.Add(
                 "orderBy",
                 ExpressionRuntime.MakeMethod<IEnumerable, RuntimeMethod>(
-                    async (myContext, items, selector) =>
+                    async (myContext, items, selector) 
+                        =>
                     {
-                        var itemArray = GetCollection(items);
-                        return (await Task.WhenAll(itemArray.Select(i => selector(myContext, new[] {i}))))
-                            .Zip(itemArray)
-                            .OrderBy(i => i.First)
-                            .Select(i => i.Second);
+                        var itemArray = GetCollection(items).ToArray();
+                        var keys = await Task.WhenAll(itemArray.Select(i => selector(myContext, new[] {i})));
+                        return itemArray.Zip(keys).OrderBy(i => i.Second).Select(i => i.First);
+                    }));
+            context.Core.Add(
+                "groupBy",
+                ExpressionRuntime.MakeMethod<IEnumerable, RuntimeMethod>(
+                    async (myContext, items, selector) 
+                        =>
+                    {
+                        var itemArray = GetCollection(items).ToArray();
+                        var keys = await Task.WhenAll(itemArray.Select(i => selector(myContext, new[] {i})));
+                        return itemArray.Zip(keys).GroupBy(i => i.Second, i => i.First);
                     }));
             context.Core.Add(
                 "reverse",
                 ExpressionRuntime.MakeMethod<IEnumerable>(
-                    async (myContext, items) => items.Cast<object?>().Reverse()));
+                    async (_, items) => items.Cast<object?>().Reverse()));
+            context.Core.Add(
+                "take",
+                ExpressionRuntime.MakeMethod<IEnumerable, int>(
+                    async (_, items, num) => items.Cast<object?>().Take(num)));
+            context.Core.Add(
+                "skip",
+                ExpressionRuntime.MakeMethod<IEnumerable, int>(
+                    async (_, items, num) => items.Cast<object?>().Skip(num)));
             context.Core.Add(
                 "get",
                 ExpressionRuntime.MakeMethod<IDictionary, string>(
-                    async (myContext, items, key) => items[key]));
+                    async (_, items, key) => items[key]));
             context.Core.Add(
                 "if",
                 ExpressionRuntime.MakeMethod<bool, RuntimeMethod, RuntimeMethod>(
