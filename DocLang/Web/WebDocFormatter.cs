@@ -14,13 +14,26 @@ namespace BassClefStudio.DocLang.Web
         /// <inheritdoc/>
         public override DocumentType OutputType { get; } = new DocumentType(MediaTypeNames.Text.Html, new Version(5, 0));
 
-        /// <inheritdoc/>
-        protected override async Task<Stream> GetTransformFile()
+        /// <summary>
+        /// The key/relative path of the XSL transform file to use.
+        /// </summary>
+        private string ResourceName { get; }
+
+        /// <summary>
+        /// Creates a new <see cref="WebDocFormatter"/> using the specified built-in XSL transform.
+        /// </summary>
+        /// <param name="resourceName">The key/relative path of the XSL transform file to use.</param>
+        public WebDocFormatter(string resourceName = "Content-v1.xsl")
         {
-            string resourceName = $"Base-v1.xsl";
+            ResourceName = resourceName;
+        }
+        
+        /// <inheritdoc/>
+        protected override async Task<Stream> GetTransformAsync()
+        {
             var transformStream = typeof(DocLangXml).Assembly.GetManifestResourceStream(
                 typeof(WebDocFormatter),
-                resourceName);
+                ResourceName);
             if (transformStream is null)
             {
                 throw new FileNotFoundException($"Could not find the XSLT for web transforms.");

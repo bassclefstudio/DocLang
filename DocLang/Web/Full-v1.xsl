@@ -1,5 +1,5 @@
 <xsl:stylesheet 
-  xmlns:t="http://bassclefstudio.dev/DocLang/v1/Base"
+  xmlns:t="https://bassclefstudio.dev/DocLang/v1/Base"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   version="1.0">
   <xsl:output method="html" encoding="ASCII"/>
@@ -119,10 +119,17 @@
       <xsl:apply-templates />
     </strong>
   </xsl:template>
+  
   <xsl:template match="t:Italic">
     <em>
       <xsl:apply-templates />
     </em>
+  </xsl:template>
+
+  <xsl:template match="t:Code">
+    <div class="code-container container">
+      <xsl:copy-of select="."/>
+    </div>
   </xsl:template>
 
   <xsl:template match="t:Heading">

@@ -15,7 +15,7 @@
         /// </summary>
         /// <param name="inputStream">The readable <see cref="Stream"/> containing the DocLang document.</param>
         /// <param name="inputType">A <see cref="DocumentType"/> indicating the known type of the document (within this service's <see cref="DocType"/>), which may omit things such as version number to have them be resolved dynamically by this <see cref="IDocValidator"/>.</param>
-        /// <returns>A specific <see cref="DocumentType"/> indicating the exact schema specifications against which this document was validated. Usually a subset of <paramref name="inputType"/></returns>
+        /// <returns>A specific <see cref="DocumentType"/> indicating the exact schema specifications against which this document was validated. Usually a subset of <paramref name="inputType"/>.</returns>
         Task<DocumentType> ValidateAsync(Stream inputStream, DocumentType inputType);
     }
 

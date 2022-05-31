@@ -1,9 +1,11 @@
 ﻿using System.Collections;
+using System.Net.Mime;
 using BassClefStudio.Storage;
 using System.Xml.Linq;
 using BassClefStudio.BassScript.Runtime;
 using BassClefStudio.DocLang.Base;
 using BassClefStudio.DocLang.Web.Sites;
+using BassClefStudio.DocLang.Xml;
 
 namespace BassClefStudio.DocLang.Web
 {
@@ -15,12 +17,12 @@ namespace BassClefStudio.DocLang.Web
         /// <summary>
         /// The name of the configuration document file within every source folder describing a website.
         /// </summary>
-        public static readonly string ConfigFile = "config.xml";
+        public static readonly string ConfigFile = "site-config.xml";
 
         /// <summary>
         /// The <see cref="string"/> XML namespace for <see cref="WebSiteBuilder"/> configuration files.
         /// </summary>
-        public static readonly string ConfigNamespace = "http://bassclefstudio.dev/DocLang/v1/Config";
+        public static readonly string ConfigNamespace = "https://bassclefstudio.dev/DocLang/v1/Config";
 
         /// <summary>
         /// The default name of the output folder within the source <see cref="IStorageFolder"/>.
@@ -47,18 +49,14 @@ namespace BassClefStudio.DocLang.Web
 
             IStorageFolder assetsFolder = await output.CreateFolderAsync("assets");
             IStorageFolder styleFolder = await assetsFolder.CreateFolderAsync("css");
-            Site site = new Site();
+            
             SiteContentResolver resolver = new SiteContentResolver();
-            // Create the context and the core methods for evaluating expressions.
-            RuntimeContext context = new RuntimeContext();
-            InitializeContext(
-                context,
-                site);
+            
             IStorageFile configFile = await source.GetFileAsync(ConfigFile);
-            using (var formats = BaseFormats.GetFormats())
+            using (FormatSpecs formatBase = BaseFormats.GetFormats())
+            using (FormatSpecs formats = formatBase.Copy())
             using (var fileStream = await configFile.OpenFileAsync())
             {
-                await formats.InitializeAsync();
                 XDocument config = XDocument.Load(fileStream.GetReadStream());
                 if (config.Root is null)
                 {
@@ -66,8 +64,23 @@ namespace BassClefStudio.DocLang.Web
                         "Failed to open the root element of the XML website configuration file."
                     );
                 }
-
-                foreach (var style in config.Root.Elements(XName.Get("Style", ConfigNamespace)))
+                
+                var location = config.Root.Attribute("Location")?.Value;
+                if (string.IsNullOrWhiteSpace(location))
+                {
+                    throw new SiteBuilderException(
+                        "Failed to create a site with no Location specified; a path must be given.");
+                }
+                
+                Site site = new Site(location);
+                // Create the context and the core methods for evaluating expressions.
+                RuntimeContext context = new RuntimeContext();
+                InitializeContext(
+                    context,
+                    site,
+                    output);
+                    
+                async Task LoadStyle(XElement style)
                 {
                     var path = style.Value;
                     if (string.IsNullOrEmpty(path))
@@ -89,7 +102,12 @@ namespace BassClefStudio.DocLang.Web
                     }
                 }
 
-                foreach (var asset in config.Root.Elements(XName.Get("Asset", ConfigNamespace)))
+                foreach (var style in config.Root.Elements(XName.Get("Style", ConfigNamespace)))
+                {
+                    await LoadStyle(style);
+                }
+
+                async Task LoadAsset(XElement asset)
                 {
                     var path = asset.Value;
                     if (string.IsNullOrEmpty(path))
@@ -111,29 +129,108 @@ namespace BassClefStudio.DocLang.Web
                     }
                 }
 
-                foreach (var constant in config.Root.Elements(XName.Get("Constant", ConfigNamespace)))
+                foreach (var asset in config.Root.Elements(XName.Get("Asset", ConfigNamespace)))
                 {
-                    var value = constant.Value;
-                    if (string.IsNullOrEmpty(value))
+                    await LoadAsset(asset);
+                }
+
+                async Task<object?> ResolveConfigObject(XElement data, RuntimeContext myContext)
+                {
+                    if (data.HasElements)
                     {
-                        this.LogWarning("Ignoring Variable {0} without value.", constant);
+                        var childContext = myContext.Copy();
+                        foreach (var child in data.Elements())
+                        {
+                            childContext.Local.Add(
+                                child.Name.LocalName,
+                                await ResolveConfigObject(child, childContext));
+                        }
+                        return childContext.Local;
                     }
                     else
                     {
-                        string? key = constant.Attribute("Name")?.Value;
-                        if (string.IsNullOrEmpty(key))
+                        var tokens = (await resolver.ResolveAsync(data.Value, myContext)).ToArray();
+                        return tokens.Length switch
                         {
-                            this.LogWarning("Ignoring Variable {0} without name.", constant);
+                            0 => null,
+                            1 => tokens[0],
+                            _ => tokens
+                        };
+                    }
+                }
+
+                async Task LoadConstant(XElement constant)
+                {
+                    string? key = constant.Attribute("Name")?.Value;
+                    if (string.IsNullOrEmpty(key))
+                    {
+                        this.LogWarning("Ignoring Variable {0} without name.", constant);
+                    }
+                    else
+                    {
+                        site.Constants.Add(key, await ResolveConfigObject(constant, context));
+                        this.LogSuccess("let {0} = \"{1}\"", key, site.Constants[key]);
+                    }
+                }
+
+                foreach (var constant in config.Root.Elements(XName.Get("Constant", ConfigNamespace)))
+                {
+                    await LoadConstant(constant);
+                }
+
+                async Task LoadFormat(XElement format, FormatSpecs formatSpecs)
+                {
+                    var formatPath = format.Attribute("Transform")?.Value;
+                    if (string.IsNullOrEmpty(formatPath))
+                    {
+                        this.LogWarning("Ignoring format {0} without transform path.", format);
+                    }
+                    else
+                    {
+                        var validatorPath = format.Attribute("Schema")?.Value;
+                        if (string.IsNullOrEmpty(validatorPath))
+                        {
+                            this.LogWarning("Ignoring format {0} without schema path.", format);
                         }
                         else
                         {
-                            site.Constants.Add(key, value);
-                            this.LogSuccess("let {0} = \"{1}\"", key, value);
+                            var key = format.Attribute("Key")?.Value;
+                            if (string.IsNullOrEmpty(key))
+                            {
+                                this.LogWarning("Ignoring format {0} without key.", format);
+                            }
+                            else
+                            {
+                                var formatType = format.Attribute("Type")?.Value ?? "xml";
+                                IDocValidator customValidator = formatType switch
+                                {
+                                    "xml" => new XsdFileValidator(await source.GetFileAsync(validatorPath)),
+                                    _ => throw new SiteBuilderException(
+                                        $"Failed to find a format type with key {formatType}.")
+                                };
+                                IDocFormatter customFormat = formatType switch
+                                {
+                                    "xml" => new XsltFileFormatter(await source.GetFileAsync(formatPath)),
+                                    _ => throw new SiteBuilderException(
+                                        $"Failed to find a format type with key {formatType}.")
+                                };
+                                formatSpecs[key] = new FormatSpec(
+                                    customValidator,
+                                    customFormat);
+                            }
                         }
                     }
                 }
 
-                foreach (var doc in config.Root.Elements(XName.Get("Template", ConfigNamespace)))
+                foreach (var format in config.Root.Elements(XName.Get("Format", ConfigNamespace)))
+                {
+                    await LoadFormat(format, formats);
+                }
+                
+                // Initialize formats with all the new custom formats as well.
+                await formats.InitializeAsync();
+                
+                async Task LoadTemplate(XElement doc, Group group)
                 {
                     var path = doc.Value;
                     if (string.IsNullOrEmpty(path))
@@ -152,8 +249,11 @@ namespace BassClefStudio.DocLang.Web
                             var format = formats[formatKey];
                             IStorageFile pageFile = await source.GetFileAsync(path);
                             string key = doc.Attribute("Key")?.Value ?? pageFile.GetNameWithoutExtension();
-                            this.LogInformation("Found template '{0}' at '{1}'.", key, pageFile.GetRelativePath(source));
-                            site.Templates[key] = new DocTemplate(
+                            this.LogInformation(
+                                "Found template '{0}' at '{1}'.",
+                                key,
+                                pageFile.GetRelativePath(source));
+                            group.Templates[key] = new Template(
                                 pageFile,
                                 key,
                                 resolver,
@@ -163,62 +263,113 @@ namespace BassClefStudio.DocLang.Web
                     }
                 }
 
-                foreach (var page in config.Root.Elements(XName.Get("Output", ConfigNamespace)))
+                async Task LoadPage(XElement page, Group group)
                 {
-                    var path = page.Value;
+                    var path = page.Attribute("Destination")?.Value;
                     if (string.IsNullOrEmpty(path))
                     {
-                        this.LogWarning("Ignoring page {0} without path.", page);
+                        this.LogWarning("Ignoring page {0} without destination.", page);
                     }
                     else
                     {
-                        string? templateName = page.Attribute("Key")?.Value;
+                        string? templateName = page.Attribute("Template")?.Value;
                         if (string.IsNullOrEmpty(templateName))
                         {
                             this.LogWarning("Ignoring page {0} without root.", page);
                         }
                         else
                         {
-                            var key = page.Attribute("Body")?.Value;
-                            var body = string.IsNullOrEmpty(key) ? null : site.Templates[key];
-                            var template = site.Templates[templateName];
-                            this.LogInformation("Compiling '{0}' (body: {1})...", templateName, key);
-                            
-                            IStorageFile destinationFile = await output.CreateFileAsync(
-                                path,
+                            var bodyName = page.Attribute("Body")?.Value;
+                            var body = string.IsNullOrEmpty(bodyName) ? null : group.GetTemplate(bodyName);
+                            var template = group.GetTemplate(templateName);
+                            IStorageFile destinationFile = await output.CreateFileRecursiveAsync(
+                                Path.Combine(path, "index.html"),
                                 CollisionOptions.Overwrite);
-                            using (IFileContent destination =
-                                   await destinationFile.OpenFileAsync(FileOpenMode.ReadWrite))
-                            using (Stream destinationStream = destination.GetWriteStream())
-                            {
-                                XElement result = await site.Templates[templateName].CompileAsync(
-                                    context.SetSelf(
-                                        template,
-                                        new KeyValuePair<string, object?>("body", body),
-                                        new KeyValuePair<string, object?>("destination", output)));
-                                await result.SaveAsync(destinationStream, SaveOptions.None, CancellationToken.None);
-                                await destinationStream.FlushAsync();
-                                this.LogSuccess(
-                                    "Compiled page {0} -> {1}.",
-                                    (body?.AssetFile ?? template.AssetFile).GetRelativePath(source),
-                                    destinationFile.GetRelativePath(source));
-                            }
+
+                            IDictionary<string, object?> propDict =
+                                await ResolveConfigObject(page, context) as IDictionary<string, object?> ??
+                                new Dictionary<string, object?>();
+                            group.Pages[path] = new Page(
+                                destinationFile,
+                                path,
+                                resolver,
+                                propDict,
+                                template,
+                                body);
                         }
+                    }
+                }
+
+                async Task LoadGroup(Group parent, XElement groupData)
+                {
+                    foreach (var doc in groupData.Elements(XName.Get("Template", ConfigNamespace)))
+                    {
+                        await LoadTemplate(doc, parent);
+                    }
+
+                    foreach (var subGroupData in groupData.Elements(XName.Get("Group", ConfigNamespace)))
+                    {
+                        string? groupName = subGroupData.Attribute("Name")?.Value;
+                        if (string.IsNullOrEmpty(groupName))
+                        {
+                            this.LogWarning("Ignoring subgroup {0} without name.", subGroupData);
+                        }
+                        else
+                        {
+                            var subGroup = new Group();
+                            await LoadGroup(subGroup, subGroupData);
+                            parent.Groups[groupName] = subGroup;
+                        }
+                    }
+
+                    foreach (var page in groupData.Elements(XName.Get("Page", ConfigNamespace)))
+                    {
+                        await LoadPage(page, parent);
+                    }
+                }
+
+                await LoadGroup(site, config.Root);
+
+                foreach (Page page in site)
+                {
+                    this.LogInformation("Compiling '{0}' (body: {1})...", page.Template.Name, page.Body?.Name);
+                    using (IFileContent destination =
+                           await page.AssetFile.OpenFileAsync(FileOpenMode.ReadWrite))
+                    using (Stream destinationStream = destination.GetWriteStream())
+                    {
+                        XElement result = await page.Template.CompileAsync(
+                            context.SetSelf(
+                                page,
+                                new KeyValuePair<string, object?>("body", page.Body)));
+                        await result.SaveAsync(destinationStream, SaveOptions.None, CancellationToken.None);
+                        await destinationStream.FlushAsync();
+                        this.LogSuccess(
+                            "Compiled page {0} -> {1}.",
+                            (page.Body?.AssetFile ?? page.Template.AssetFile).GetRelativePath(source),
+                            page.AssetFile.GetRelativePath(source));
                     }
                 }
             }
             return output;
         }
 
-        private void InitializeContext(RuntimeContext context, Site site)
+        private void InitializeContext(RuntimeContext context, Site site, IStorageFolder output)
         {
             context.Core.Add("site", site);
             context.Core.Add("null", null);
             
             context.Core.Add(
-                "relative",
-                ExpressionRuntime.MakeMethod<IStorageItem, IStorageItem>(
-                    async (_, f1, f2) => f1.GetRelativePath(f2)));
+                "getPath",
+                ExpressionRuntime.MakeMethod<IStorageItem>(
+                    async (_, f1) => Path.Combine(site.Location, f1.GetRelativePath(output))));
+
+            context.Core.Add(
+                "getLink",
+                ExpressionRuntime.MakeMethod<Page>(
+                    async (_, page) => Path.Combine(
+                        site.Location,
+                        Path.GetDirectoryName(page.AssetFile.GetRelativePath(output)) ?? string.Empty)));
+            
             context.Core.Add(
                 "select",
                 ExpressionRuntime.MakeMethod<IEnumerable, RuntimeMethod>(
@@ -267,7 +418,15 @@ namespace BassClefStudio.DocLang.Web
                 ExpressionRuntime.MakeMethod<IEnumerable, int>(
                     async (_, items, num) => items.Cast<object?>().Skip(num)));
             context.Core.Add(
-                "get",
+                "any",
+                ExpressionRuntime.MakeMethod<IEnumerable>(
+                    async (_, items) => items.Cast<object?>().Any()));
+            context.Core.Add(
+                "index",
+                ExpressionRuntime.MakeMethod<IEnumerable, int>(
+                    async (_, items, num) => items.Cast<object?>().ElementAt(num)));
+            context.Core.Add(
+                "getItem",
                 ExpressionRuntime.MakeMethod<IDictionary, string>(
                     async (_, items, key) => items[key]));
             context.Core.Add(
@@ -275,6 +434,10 @@ namespace BassClefStudio.DocLang.Web
                 ExpressionRuntime.MakeMethod<bool, RuntimeMethod, RuntimeMethod>(
                     async (myContext, cond, tRun, fRun) 
                         => cond ? await tRun(myContext) : await fRun(myContext)));
+            context.Core.Add(
+                "dateTime",
+                ExpressionRuntime.MakeMethod<string>(
+                    async (_, date) => DateTime.Parse(date)));
         }
 
         private object?[] GetCollection(IEnumerable items)

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link href="${relative(get(site.styles, 'main').file, destination)}" rel="stylesheet"/>
+        <link href="${getPath(site.styles.main.file)}" rel="stylesheet"/>
     </head>
     <body>
         ${body.compile()}

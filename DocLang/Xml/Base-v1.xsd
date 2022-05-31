@@ -1,8 +1,8 @@
 <xs:schema
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified"
-    xmlns="http://bassclefstudio.dev/DocLang/v1/Base"
-    targetNamespace="http://bassclefstudio.dev/DocLang/v1/Base">
+    xmlns="https://bassclefstudio.dev/DocLang/v1/Base"
+    targetNamespace="https://bassclefstudio.dev/DocLang/v1/Base">
     <xs:element name="Document" type="Document">
     </xs:element>
 
@@ -27,11 +27,6 @@
                 </xs:annotation>
             </xs:element>
         </xs:all>
-        <xs:attribute name="Id" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>A unique ID in the document tree that identifies this document.</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="Name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>The name of the document which is shown externally.</xs:documentation>

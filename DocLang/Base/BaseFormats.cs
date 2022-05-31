@@ -17,7 +17,9 @@ public static class BaseFormats
     /// <returns>The resulting <see cref="IDictionary{TKey,TValue}"/>. Note that <see cref="FormatSpec"/>s should be disposed when this dictionary is used.</returns>
     public static FormatSpecs GetFormats() => new FormatSpecs()
     {
-        { "doclang-base", new FormatSpec(new DocLangValidator(), new WebDocFormatter()) },
+        { "doclang", new FormatSpec(new DocLangValidator(), new WebDocFormatter()) },
+        { "doclang-full", new FormatSpec(new DocLangValidator(), new WebDocFormatter("Full-v1.xsl")) },
+        { "doclang-toc", new FormatSpec(new DocLangValidator(), new WebDocFormatter("TOC-v1.xsl")) },
         { "web", new FormatSpec(new RawDocValidator(MediaTypeNames.Text.Html), new RawDocFormatter(MediaTypeNames.Text.Html)) },
     };
     
@@ -48,6 +50,25 @@ public class FormatSpecs : Dictionary<string, FormatSpec>, IDisposable
     /// </summary>
     public async Task InitializeAsync()
         => await Task.WhenAll(this.Values.Select(i => i.Formatter.InitializeAsync()).ToArray());
+
+    /// <summary>
+    /// Creates a new, empty <see cref="FormatSpecs"/> collection.
+    /// </summary>
+    public FormatSpecs()
+    { }
+    
+    /// <summary>
+    /// Creates a new <see cref="FormatSpecs"/> from a collection of key-value pairs.
+    /// </summary>
+    /// <param name="specs">The <see cref="FormatSpec"/> specifications, denoted by <see cref="string"/> keys, in a collection.</param>
+    public FormatSpecs(IEnumerable<KeyValuePair<string, FormatSpec>> specs) : base(specs)
+    { }
+
+    /// <summary>
+    /// Creates a <see cref="FormatSpecs"/> copy of this current dictionary.
+    /// </summary>
+    /// <returns></returns>
+    public FormatSpecs Copy() => new FormatSpecs(this);
     
     /// <inheritdoc/>
     public void Dispose()

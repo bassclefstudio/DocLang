@@ -16,10 +16,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Web\Base-v1.xsl">
+    <EmbeddedResource Include="Web\Full-v1.xsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Xml\Base-v1.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Remove="Web\Content-v1.xsl" />
+    <EmbeddedResource Include="Web\Content-v1.xsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Remove="Web\TOC-v1.xsl" />
+    <EmbeddedResource Include="Web\TOC-v1.xsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

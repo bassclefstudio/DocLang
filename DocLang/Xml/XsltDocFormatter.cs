@@ -1,6 +1,8 @@
 ﻿using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Xsl;
+using BassClefStudio.DocLang.Base;
+using BassClefStudio.Storage;
 
 namespace BassClefStudio.DocLang.Xml
 {
@@ -24,7 +26,7 @@ namespace BassClefStudio.DocLang.Xml
         /// Creates a new <see cref="XsltDocFormatter"/>.
         /// </summary>
         /// <param name="debug">A <see cref="bool"/> indicating whether the XSLT should be compiled with debug mode enabled.</param>
-        public XsltDocFormatter(bool debug = false)
+        protected XsltDocFormatter(bool debug = false)
         {
             Transform = new XslCompiledTransform(debug);
         }
@@ -33,16 +35,16 @@ namespace BassClefStudio.DocLang.Xml
         /// Asynchronously gets a <see cref="Stream"/> corresponding to the XSL transform data used in this <see cref="XsltDocFormatter"/>.
         /// </summary>
         /// <returns>The XSLT <see cref="Stream"/>.</returns>
-        protected abstract Task<Stream> GetTransformFile();
+        protected abstract Task<Stream> GetTransformAsync();
 
         /// <inheritdoc/>
         public async Task InitializeAsync()
         {
-            using (var styleStream = await GetTransformFile())
+            await using (var styleStream = await GetTransformAsync())
             using (var styleReader = XmlReader.Create(styleStream))
             {
                 await Task.Run(() =>
-                    Transform.Load(styleReader, XsltSettings.Default, null));
+                    Transform.Load(styleReader, XsltSettings.Default, new XmlUrlResolver()));
             }
         }
 
@@ -57,7 +59,52 @@ namespace BassClefStudio.DocLang.Xml
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        public virtual void Dispose()
         { }
+    }
+
+    /// <summary>
+    /// Represents an <see cref="XsltDocFormatter"/> with an <see cref="IStorageFile"/> as the source of the XSL transform.
+    /// </summary>
+    public class XsltFileFormatter : XsltDocFormatter
+    {
+        /// <inheritdoc/>
+        public override DocumentType InputType { get; } = BaseFormats.Types["xml"];
+        
+        /// <inheritdoc/>
+        public override DocumentType OutputType { get; } = BaseFormats.Types["web"];
+
+        /// <summary>
+        /// The <see cref="IStorageFile"/> reference to the XSLT being used to transform documents.
+        /// </summary>
+        protected IStorageFile File { get; }
+        
+        /// <summary>
+        /// Creates a new <see cref="XsltFileFormatter"/> from the given file.
+        /// </summary>
+        /// <param name="file">The <see cref="IStorageFile"/> reference to the XSLT being used to transform documents.</param>
+        public XsltFileFormatter(IStorageFile file)
+        {
+            File = file;
+        }
+        
+        /// <summary>
+        /// The <see cref="IFileContent"/> content of <see cref="File"/>, which is loaded to get the data for <see cref="GetTransformAsync"/>.
+        /// </summary>
+        private IFileContent? FileContent { get; set; }
+        
+        /// <inheritdoc/>
+        protected override async Task<Stream> GetTransformAsync()
+        {
+            FileContent ??= await File.OpenFileAsync();
+            return FileContent.GetReadStream();
+        }
+
+        /// <inheritdoc/>
+        public override void Dispose()
+        {
+            FileContent?.Dispose();
+            base.Dispose();
+        }
     }
 }

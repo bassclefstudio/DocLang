@@ -93,7 +93,8 @@ namespace BassClefStudio.DocLang.Web
             content.SetValue(string.Concat(await ResolveAsync(content.Value, context)));
         }
 
-        private async Task<IEnumerable<object?>> ResolveAsync(string content, RuntimeContext context)
+        /// <inheritdoc/>
+        public async Task<IEnumerable<object?>> ResolveAsync(string content, RuntimeContext context)
         {
             var matches = ExpressionMatch.Matches(content);
             int[] matchStarts = matches.Select(m => m.Index).ToArray();
@@ -110,7 +111,7 @@ namespace BassClefStudio.DocLang.Web
                     {
                         IExpression expData = Parser.BuildExpression(matchExps[index]);
                         var result = await Runtime.ExecuteAsync(expData, context);
-                        if (result is IEnumerable results)
+                        if (result is not string && result is IEnumerable results)
                         {
                             newContent.AddRange(results.Cast<object?>());
                         }
