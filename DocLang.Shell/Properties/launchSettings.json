@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DocLang.Shell": {
+      "commandName": "Project",
+      "commandLineArgs": "site -i ../../../../Samples"
+    }
+  }
+}

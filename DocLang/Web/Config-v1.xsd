@@ -1,0 +1,181 @@
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    elementFormDefault="qualified"
+    xmlns="https://bassclefstudio.dev/DocLang/v1/Config"
+    targetNamespace="https://bassclefstudio.dev/DocLang/v1/Config">
+    <xs:element name="Site" type="Site">
+        <xs:annotation>
+            <xs:documentation>The root of the configuration file, which contains information about all of the components and templating of the completed site.</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="Site">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Template" type="Template">
+                <xs:annotation>
+                    <xs:documentation>A template file which contains content and/or styling for generating DocLang webpages.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Style" type="Asset">
+                <xs:annotation>
+                    <xs:documentation>A CSS stylesheet which can be referenced as the style for Templates and Pages within the site.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Asset" type="Asset">
+                <xs:annotation>
+                    <xs:documentation>A generic asset which should be copied into the site's output folder.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Constant" type="Constant">
+                <xs:annotation>
+                    <xs:documentation>A compile-time constant value which can be referenced by any Template or Page in the site.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Format" type="Format">
+                <xs:annotation>
+                    <xs:documentation>A custom formatter used for loading website templates.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Page" type="Page">
+                <xs:annotation>
+                    <xs:documentation>Decribes a webpage that should be compiled when the website is built.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Group" type="Group">
+                <xs:annotation>
+                    <xs:documentation>A collection of grouped page templates that should be complied and referenced together.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+        <xs:attribute name="Location" type="xs:anyURI">
+            <xs:annotation>
+                <xs:documentation>The location (as a qualified URI) from which all links in the site are calculated relative to.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="Group">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Template" type="Template">
+                <xs:annotation>
+                    <xs:documentation>A template file which contains content and/or styling for generating DocLang webpages.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Page" type="Page">
+                <xs:annotation>
+                    <xs:documentation>An output webpage that is a member of this Group.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="Group" type="Group">
+                <xs:annotation>
+                    <xs:documentation>A sub-group of elements contained within the given group.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+        <xs:attribute name="Name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The unique name within the current scope of this group of pages.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="Asset">
+        <xs:simpleContent>
+            <xs:annotation>
+                <xs:documentation>The relative path in the source folder to the asset file.</xs:documentation>
+            </xs:annotation>
+            <xs:extension base="xs:anyURI">
+                <xs:attribute name="Key" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The unique string key of the asset, which is used to reference it within the site.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="Template">
+        <xs:simpleContent>
+            <xs:annotation>
+                <xs:documentation>The relative path in the source folder to the template file.</xs:documentation>
+            </xs:annotation>
+            <xs:extension base="xs:anyURI">
+                <xs:attribute name="Key" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The unique string key of the asset, which is used to reference it within the site.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="Format" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The string key of the formatter/validator used to compile this template content.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="Constant">
+        <xs:simpleContent>
+            <xs:annotation>
+                <xs:documentation>A string constant value which can be referenced by any page or template.</xs:documentation>
+            </xs:annotation>
+            <xs:extension base="xs:anyType">
+                <xs:attribute name="Name" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The unique string name of the constant, which is used to reference it within the Site.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="Page">
+        <xs:complexContent>
+            <xs:extension base="xs:anyType">
+                <xs:attribute name="Template" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>The unique string key of the Template or Document used as the root of this output webpage.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="Body" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>An optional string key of the content which makes up the body of the webpage as it is compiled.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="Destination" type="xs:anyURI">
+                    <xs:annotation>
+                        <xs:documentation>The relative path in the output folder where the webpage should be saved.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="Format">
+        <xs:attribute name="Key" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>A unique key given to this Format to distinguish it from other Formats (including the built-in formatters).</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="Schema" type="xs:anyURI" use="required">
+            <xs:annotation>
+                <xs:documentation>The relative path in the output folder where the validator/schema description can be loaded from.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="Transform" type="xs:anyURI" use="required">
+            <xs:annotation>
+                <xs:documentation>The relative path in the output folder where the formatter/transform description can be loaded from.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="Type">
+            <xs:annotation>
+                <xs:documentation>The type of format description that is being loaded. Defaults to XSD/XSLT ('xml').</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="xml"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+</xs:schema>

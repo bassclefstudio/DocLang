@@ -4,22 +4,40 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>BassClefStudio.DocLang</AssemblyName>
     <RootNamespace>BassClefStudio.DocLang</RootNamespace>
-    <Version>0.0.1-preview.1</Version>
-    <Authors>BassClefStudio</Authors>
-    <Description>An easy-to-use, but fully-featured semantic document markup language.</Description>
-    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageProjectUrl>https://github.com/bassclefstudio/DocLang</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/bassclefstudio/DocLang.git</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.3.0" />
-    <PackageReference Include="CommunityToolkit.Diagnostics" Version="7.1.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
+    <None Remove="Xml\Base-v1.0.xsd" />
+    <None Remove="Transform.xsl" />
+    <None Remove="Xml\Base-v1.xsd" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Web\Full-v1.xsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Xml\Base-v1.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Remove="Web\Content-v1.xsl" />
+    <EmbeddedResource Include="Web\Content-v1.xsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <None Remove="Web\TOC-v1.xsl" />
+    <EmbeddedResource Include="Web\TOC-v1.xsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../StorageLib/StorageLib/StorageLib.csproj" />
+    <ProjectReference Include="../../BassScript/BassScript/BassScript.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pidgin" Version="3.1.0" />
+  </ItemGroup>
 </Project>
