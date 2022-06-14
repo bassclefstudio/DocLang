@@ -19,7 +19,9 @@ Notable (additional) features of DocLang include:
 Writing in DocLang is designed to be easy to learn and use while writing just about anything. Broadly, DocLang syntax uses XML to manage tags and content, similar to HTML or XAML[^1].
 
 ```XML
-<Document Name="Test Document" Id="testDoc">
+<Document
+    xmlns="https://bassclefstudio.dev/DocLang/v1/Core" 
+    Name="Test Document" Id="testDoc">
   <Title>My Test Document</Title>
   <Authors>
     <Author Type="Creator">bassclefstudio</Author>
