@@ -18,32 +18,4 @@ Notable (additional) features of DocLang include:
 # DocLang Syntax
 Writing in DocLang is designed to be easy to learn and use while writing just about anything. Broadly, DocLang syntax uses XML to manage tags and content, similar to HTML or XAML[^1].
 
-```XML
-<Document Name="Test Document" Id="testDoc">
-  <Title>My Test Document</Title>
-  <Authors>
-    <Author Type="Creator">bassclefstudio</Author>
-  </Authors>
-  <Content>
-    <Heading Name="Heading 1" Id="h1">
-      <Title>First Heading</Title>
-      <Content>
-        <Paragraph>
-            I'm generally a very boring person, much like this document.
-        </Paragraph>
-        <Paragraph>
-            Most interestingly, I enjoy taking long walks on the beach.
-        </Paragraph>
-      </Content>
-    </Heading>
-  </Content>
-</Document>
-```
-
-## Using XML
-DocLang XML syntax consists of XML tags (such as `<tag>`, `</tag>`, and `<tag/>`, which specify various sections within the document in which certain features are enabled. Each one of these pairs of open/close tags (or a complete tag `<tag/>`) constitutes an **element** in XML, which corresponds to a **node** in the DocLang document tree. Additionally, elements can have attributes as well as children: as in the example above (`Id="chapter-1"`), simple property values can be added inline without having their own element. All *nodes*, however, require their own full XML element.
-
-# Document
-The **Document** is the root *node* of every DocLang file. It contains basic information about the entirety of the document, as well as a content collection of one or more *nodes*. These contain the structure of the document itself.
-
 [^1]: Yes, technically HTML and XAML aren't always "true XML", but anyone familiar with these concepts understands the basics of XML syntax so it's fine for this comparison.
