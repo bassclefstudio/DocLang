@@ -4,9 +4,20 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
     <AssemblyName>BassClefStudio.DocLang</AssemblyName>
     <RootNamespace>BassClefStudio.DocLang</RootNamespace>
+
+    <PackageId>DocLang</PackageId>
+    <Authors>BassClefStudio</Authors>
+    <Description>An XML-based markup language that can be used for everything from notes to websites.</Description>
+    <PackageProjectUrl>https://github.com/bassclefstudio/DocLang</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bassclefstudio/DocLang.git</RepositoryUrl>
+    <PackageTags>documents;website;language</PackageTags>
+    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,11 +44,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../StorageLib/StorageLib/StorageLib.csproj" />
-    <ProjectReference Include="../../BassScript/BassScript/BassScript.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="BassScript" Version="1.0.0" />
     <PackageReference Include="Pidgin" Version="3.1.0" />
+    <PackageReference Include="StorageLib" Version="1.0.0" />
   </ItemGroup>
 </Project>

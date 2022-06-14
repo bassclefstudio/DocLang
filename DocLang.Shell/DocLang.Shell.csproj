@@ -1,23 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<PackAsTool>true</PackAsTool>
+		<ToolCommandName>doclang</ToolCommandName>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <AssemblyName>BassClefStudio.DocLang.Shell</AssemblyName>
-    <RootNamespace>BassClefStudio.DocLang.Shell</RootNamespace>
-  </PropertyGroup>
+		<AssemblyName>BassClefStudio.DocLang.Shell</AssemblyName>
+		<RootNamespace>BassClefStudio.DocLang.Shell</RootNamespace>
 
-  <ItemGroup>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
-    <PackageReference Include="System.CommandLine.Rendering" Version="0.4.0-alpha.21617.1" />
-  </ItemGroup>
+		<PackageId>DocLang.Shell</PackageId>
+		<Authors>BassClefStudio</Authors>
+		<Description>An XML-based markup language that can be used for everything from notes to websites. The Shell package provides a CLI tool that can be used to compile DocLang content to a variety of platforms and formats.</Description>
+		<PackageProjectUrl>https://github.com/bassclefstudio/DocLang</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/bassclefstudio/DocLang.git</RepositoryUrl>
+		<PackageTags>documents;website;language;cli;tools</PackageTags>
+		<PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="../../StorageLib/StorageLib/StorageLib.csproj" />
-    <ProjectReference Include="../../StorageLib/StorageLib.Base/StorageLib.Base.csproj" />
-    <ProjectReference Include="../DocLang/DocLang.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="StorageLib.Base" Version="1.0.0" />
+		<PackageReference Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
+		<PackageReference Include="System.CommandLine.Rendering" Version="0.4.0-alpha.21617.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../DocLang/DocLang.csproj" />
+	</ItemGroup>
 
 </Project>
