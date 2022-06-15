@@ -1,7 +1,4 @@
-﻿using System.Xml;
-using System.Xml.Schema;
-
-namespace BassClefStudio.DocLang.Xml
+﻿namespace BassClefStudio.DocLang.Xml
 {
     /// <summary>
     /// Provides an <see cref="IDocValidator"/> for base DocLang XML files.

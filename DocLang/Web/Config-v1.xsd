@@ -115,7 +115,7 @@
     </xs:complexType>
 
     <xs:complexType name="Constant">
-        <xs:simpleContent>
+        <xs:complexContent>
             <xs:annotation>
                 <xs:documentation>A string constant value which can be referenced by any page or template.</xs:documentation>
             </xs:annotation>
@@ -126,7 +126,7 @@
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
-        </xs:simpleContent>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="Page">
@@ -147,6 +147,11 @@
                         <xs:documentation>The relative path in the output folder where the webpage should be saved.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+				<xs:attribute name="Key" type="xs:string">
+					<xs:annotation>
+						<xs:documentation>A friendly key for the page in question. Defaults to the name of the body if not specified (or, if the body is also null, the name of the template in use).</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

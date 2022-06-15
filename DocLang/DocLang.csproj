@@ -10,6 +10,7 @@
     <RootNamespace>BassClefStudio.DocLang</RootNamespace>
 
     <PackageId>DocLang</PackageId>
+	  <Version>1.0.1</Version>
     <Authors>BassClefStudio</Authors>
     <Description>An XML-based markup language that can be used for everything from notes to websites.</Description>
     <PackageProjectUrl>https://github.com/bassclefstudio/DocLang</PackageProjectUrl>
@@ -44,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BassScript" Version="1.0.0" />
+    <PackageReference Include="BassScript" Version="1.0.1" />
     <PackageReference Include="Pidgin" Version="3.1.0" />
     <PackageReference Include="StorageLib" Version="1.0.0" />
   </ItemGroup>
