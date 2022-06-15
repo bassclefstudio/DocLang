@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Net.Mime;
 using BassClefStudio.Storage;
 using System.Xml.Linq;
@@ -272,6 +272,7 @@ namespace BassClefStudio.DocLang.Web
                     }
                     else
                     {
+                        string name = page.Attribute("Name")?.Value ?? path;
                         string? templateName = page.Attribute("Template")?.Value;
                         if (string.IsNullOrEmpty(templateName))
                         {
@@ -289,7 +290,7 @@ namespace BassClefStudio.DocLang.Web
                             IDictionary<string, object?> propDict =
                                 await ResolveConfigObject(page, context) as IDictionary<string, object?> ??
                                 new Dictionary<string, object?>();
-                            group.Pages[path] = new Page(
+                            group.Pages[name] = new Page(
                                 destinationFile,
                                 path,
                                 resolver,
