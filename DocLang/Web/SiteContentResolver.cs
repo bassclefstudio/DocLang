@@ -1,19 +1,7 @@
-﻿using BassClefStudio.DocLang.Web.Sites;
-using BassClefStudio.DocLang.Xml;
-using BassClefStudio.Storage;
-using BassClefStudio.BassScript.Parsers;
+﻿using BassClefStudio.BassScript.Parsers;
 using BassClefStudio.BassScript.Runtime;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
-using Pidgin;
-using static Pidgin.Parser;
-using static Pidgin.Parser<char>;
 using BassClefStudio.BassScript.Data;
 using System.Text.RegularExpressions;
 

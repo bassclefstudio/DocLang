@@ -1,5 +1,4 @@
 ﻿using System.Net.Mime;
-using System.Xml;
 
 namespace BassClefStudio.DocLang.Xml
 {

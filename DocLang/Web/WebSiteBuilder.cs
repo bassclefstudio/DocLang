@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Net.Mime;
+﻿using System.Collections;
 using BassClefStudio.Storage;
 using System.Xml.Linq;
 using BassClefStudio.BassScript.Runtime;
@@ -145,7 +144,7 @@ namespace BassClefStudio.DocLang.Web
                                 child.Name.LocalName,
                                 await ResolveConfigObject(child, childContext));
                         }
-                        return childContext.Local;
+                        return new RuntimeObject(childContext.Local);
                     }
                     else
                     {
@@ -272,7 +271,6 @@ namespace BassClefStudio.DocLang.Web
                     }
                     else
                     {
-                        string name = page.Attribute("Name")?.Value ?? path;
                         string? templateName = page.Attribute("Template")?.Value;
                         if (string.IsNullOrEmpty(templateName))
                         {
@@ -281,18 +279,18 @@ namespace BassClefStudio.DocLang.Web
                         else
                         {
                             var bodyName = page.Attribute("Body")?.Value;
+                            string name = page.Attribute("Key")?.Value ?? bodyName ?? templateName;
                             var body = string.IsNullOrEmpty(bodyName) ? null : group.GetTemplate(bodyName);
                             var template = group.GetTemplate(templateName);
                             IStorageFile destinationFile = await output.CreateFileRecursiveAsync(
                                 Path.Combine(path, "index.html"),
                                 CollisionOptions.Overwrite);
-
                             IDictionary<string, object?> propDict =
-                                await ResolveConfigObject(page, context) as IDictionary<string, object?> ??
+                                (await ResolveConfigObject(page, context) as RuntimeObject)?.Data ??
                                 new Dictionary<string, object?>();
                             group.Pages[name] = new Page(
                                 destinationFile,
-                                path,
+                                name,
                                 resolver,
                                 propDict,
                                 template,
@@ -333,7 +331,7 @@ namespace BassClefStudio.DocLang.Web
 
                 foreach (Page page in site)
                 {
-                    this.LogInformation("Compiling '{0}' (body: {1})...", page.Template.Name, page.Body?.Name);
+                    this.LogInformation("Compiling page \"{0}\" (template: {1} body: {2})...", page.Name, page.Template.Name, page.Body?.Name);
                     using (IFileContent destination =
                            await page.AssetFile.OpenFileAsync(FileOpenMode.ReadWrite))
                     using (Stream destinationStream = destination.GetWriteStream())
